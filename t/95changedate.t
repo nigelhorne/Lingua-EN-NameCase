@@ -6,7 +6,7 @@ use IO::File;
 
 # Skip if doing a regular install
 plan skip_all => "Author tests not required for installation"
-    unless ( $ENV{AUTOMATED_TESTING} );
+    unless ( $ENV{AUTHOR_TESTING} );
 
 my $fh = IO::File->new('Changes','r')   or plan skip_all => "Cannot open Changes file";
 
