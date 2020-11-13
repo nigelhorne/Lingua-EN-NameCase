@@ -1,6 +1,9 @@
 Revision history for Lingua-EN-NameCase
 =======================================
 
+1.20
+	No changes to the code, new maintainer - thanks to BARBIE
+
 1.19    2015-01-29
         - added use warnings for CPANTS completeness.
 

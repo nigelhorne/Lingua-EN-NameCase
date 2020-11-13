@@ -6,7 +6,7 @@ use locale;
 
 use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK $HEBREW $SPANISH $ROMAN $POSTNOMINAL );
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 #--------------------------------------------------------------------------
 # Modules
@@ -290,6 +290,8 @@ Use Kim Ryan's NameParse.pm for any really sophisticated name parsing.
 
   1998-2014    Mark Summerfield <summer@qtrac.eu>
   2014-present Barbie <barbie@cpan.org>
+
+  2020- Maintained by Nigel Horne, C<< <njh at bandsman.co.uk> >>
 
 =head1 ACKNOWLEDGEMENTS
 
