@@ -19,7 +19,7 @@ WriteMakefile(
 
         'Carp'                  => '0',
         'Exporter'              => '0',
-        
+
         # build/test prereqs
         'IO::File'              => '0',
         'Test::More'            => '0.70'

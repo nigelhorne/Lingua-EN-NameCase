@@ -32,7 +32,7 @@ while(<$fh>) {
                             (   (Z|[-+]\d+:\d+) # +01:00        - timezone
                             )?
                         )?
-                    ) 
+                    )
                 !x,'... version has a date');
 }
 
