@@ -27,18 +27,18 @@ $ROMAN          = 1;
 $POSTNOMINAL    = 1;
 
 my @POST_NOMINAL_INITIALS = qw(
-    VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG
+    VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG 
     DCMG KCIE KCVO DCVO KBE DBE CB CSI CMG CIE CVO CBE DSO LVO OBE ISO MVO MBE
     IOM CGC RRC DSC MC DFC AFC ARRC OBI DCM CGM GM IDSM DSM MM DFM AFM SGM IOM
     CPM QGM RVM BEM QPM QFSM QAM CPM MSM ERD VD TD UD ED RD VRD AE
-
-    PC ADC QHP QHS QHDS QHNS QHC SCJ J LJ QS SL QC KC JP DL MP MSP MSYP AM AM
-    MLA MEP  DBEnv DConstMgt DREst EdD DPhil PhD DLitt DSocSci MD EngD DD LLD
-    DProf MA MArch MAnth MSc MMORSE MMath MMathStat MPharm MPhil MSc MSci MSt
+    
+    PC ADC QHP QHS QHDS QHNS QHC SCJ J LJ QS SL QC KC JP DL MP MSP MSYP AM AM 
+    MLA MEP  DBEnv DConstMgt DREst EdD DPhil PhD DLitt DSocSci MD EngD DD LLD 
+    DProf MA MArch MAnth MSc MMORSE MMath MMathStat MPharm MPhil MSc MSci MSt 
     MRes MEng MChem MBiochem MSocSc MMus LLM BCL MPhys MComp MAcc MFin MBA MPA
     MEd MEP MEnt MCGI MGeol MLitt MEarthSc MClinRes BA BSc LLB BEng MBChB FdA
-    FdSc FdEng PgDip PgD PgCert PgC PgCLTHE AUH AKC AUS HNC HNCert HND HNDip
-    DipHE Dip OND CertHE ACSM MCSM DIC AICSM ARSM ARCS LLB LLM BCL MJur DPhil
+    FdSc FdEng PgDip PgD PgCert PgC PgCLTHE AUH AKC AUS HNC HNCert HND HNDip 
+    DipHE Dip OND CertHE ACSM MCSM DIC AICSM ARSM ARCS LLB LLM BCL MJur DPhil 
     PhD LLD DipLP FCILEx GCILEx ACILEx CQSW DipSW BSW MSW FCILT CMILT MILT CPL
     CTP CML PLS CTL DLP PLog EJLog ESLog EMLog JrLog Log SrLog BArch MArch ARB
     RIBA RIAS RIAI RSAW MB BM BS BCh BChir MRCS FRCS MS MCh. MRCP FRCP MRCPCH
@@ -210,7 +210,7 @@ Lingua::EN::NameCase - Correctly case a person's name from UPERCASE or lowcase
     # Now 'La' => 'La' instead of (default) French 'La' => 'la'.
 
     $Lingua::EN::NameCase::HEBREW = 0;
-    # Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein'
+    # Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein' 
     #   instead of (default) => 'Aharon ben Amram Ha-Kohein'.
 
     $Lingua::EN::NameCase::ROMAN = 0;
@@ -265,12 +265,12 @@ plus names with roman numerals (up to 89, LXXXIX), e.g.:
 
 =item * NameCase
 
-Takes a scalar, scalarref, array or arrayref, and changes the case of the
+Takes a scalar, scalarref, array or arrayref, and changes the case of the 
 contents, as appropriate. Essentially a wrapper around nc().
 
 =item * nc
 
-Takes a scalar or scalarref, and change the case of the name in the
+Takes a scalar or scalarref, and change the case of the name in the 
 corresponding string appropriately.
 
 =back

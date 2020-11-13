@@ -19,12 +19,13 @@ WriteMakefile(
 
         'Carp'                  => '0',
         'Exporter'              => '0',
-        
+
         # build/test prereqs
         'IO::File'              => '0',
         'Test::More'            => '0.70'
-
-    },
+	}, TEST_REQUIRES => {
+		'Test::Most' => 0,
+	},
     'LIBS'              => [''],   # e.g., '-lm'
     'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'
     'INC'               => '',     # e.g., '-I/usr/include/other'
