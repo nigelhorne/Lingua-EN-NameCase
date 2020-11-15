@@ -3,6 +3,7 @@ lib/Lingua/EN/NameCase.pm
 LICENSE
 Makefile.PL
 MANIFEST
+MANIFEST.SKIP
 META.json
 META.yml
 README
@@ -18,3 +19,4 @@ t/96metatest.t
 t/eol.t
 t/pod-cm.t
 t/pod.t
+t/vars.t
