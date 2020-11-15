@@ -7,10 +7,12 @@ use Test::More;
 plan skip_all => "Author tests not required for installation"
     unless ( $ENV{AUTHOR_TESTING} );
 
-eval "use Test::CPAN::Meta::JSON";
-plan skip_all => "Test::CPAN::Meta::JSON required for testing META.json files" if $@;
+eval 'use Test::CPAN::Meta::JSON';
+plan skip_all => 'Test::CPAN::Meta::JSON required for testing META.json files' if $@;
 
 plan 'no_plan';
+
+exit;	# Don't use our own META.json file
 
 my $meta = meta_spec_ok(undef,undef,@_);
 

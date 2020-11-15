@@ -5,6 +5,7 @@ Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 README
+README.md
 t/00use.t
 t/10namecase.t
 t/11examples.t
@@ -15,6 +16,8 @@ t/94metatest.t
 t/95changedate.t
 t/96metatest.t
 t/eol.t
+t/links.t
+t/no404s.t
 t/pod-cm.t
 t/pod.t
 t/vars.t
