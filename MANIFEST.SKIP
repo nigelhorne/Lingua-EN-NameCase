@@ -43,6 +43,7 @@
 \.tmp$
 \.#
 \.rej$
+\.swp$
 
 # Avoid OS-specific files/dirs
 # Mac OSX metadata
@@ -63,4 +64,4 @@
 \.appveyor\.yml
 \.releaserc
 \.lwpcookies
-HTML-.*
+Lingua-EN-.*
