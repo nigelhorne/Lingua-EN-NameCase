@@ -16,7 +16,6 @@ WriteMakefile(
     PL_FILES            => {},
     NO_META             => 1,
     PREREQ_PM => {
-
         'Carp'                  => '0',
         'Exporter'              => '0',
 
@@ -45,7 +44,6 @@ WriteMakefile(
 				web => 'https://github.com/nigelhorne/Lingua-EN-NameCase/issues',
 				url => 'https://github.com/nigelhorne/Lingua-EN-NameCase/issues',
 			}
-
 		},
 	},
 );
