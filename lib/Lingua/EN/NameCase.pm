@@ -58,6 +58,7 @@ our $VERSION = '1.21';
 
     $Lingua::EN::NameCase::POSTNOMINAL = 0;
     # Now 'PHD' => 'PhD' instead of (default) 'PHD' => 'Phd'.
+    # Setting this to 1 (the default) really slows this module down
 
 =head1 DESCRIPTION
 
