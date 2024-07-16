@@ -1,11 +1,13 @@
 #!/usr/bin/perl -w
 use strict;
 
+# FIXME:  Make this work with the output from date(1)
+
 use Test::More;
 use IO::File;
 
 # Skip if doing a regular install
-plan skip_all => "Author tests not required for installation"
+plan skip_all => 'Author tests not required for installation'
     unless ( $ENV{AUTHOR_TESTING} );
 
 my $fh = IO::File->new('Changes','r')   or plan skip_all => "Cannot open Changes file";

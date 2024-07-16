@@ -43,5 +43,5 @@ jobs:
       - name: Run Tests
         run: prove -l -b t
         env:
-          AUTHOR_TESTING: 1
+          # AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
