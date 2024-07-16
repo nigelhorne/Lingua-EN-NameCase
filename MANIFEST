@@ -20,5 +20,6 @@ t/eol.t
 t/links.t
 t/no404s.t
 t/pod-cm.t
+t/pod-synopsis.t
 t/pod.t
 t/vars.t

@@ -26,7 +26,8 @@ our $VERSION = '1.21';
 
     use Lingua::EN::NameCase qw( nc );
 
-    $FixedCasedName  = nc( $OriginalName );
+    my $OriginalName = 'Nigel';
+    my $FixedCasedName  = nc( $OriginalName );
 
     $FixedCasedName  = nc( \$OriginalName );
 
@@ -35,7 +36,8 @@ our $VERSION = '1.21';
     use Lingua::EN::NameCase 'NameCase';
 
     $FixedCasedName  = NameCase( $OriginalName );
-    @FixedCasedNames = NameCase( @OriginalNames );
+    my @OriginalNames = ('Nigel');
+    my @FixedCasedNames = NameCase( @OriginalNames );
 
     $FixedCasedName  = NameCase( \$OriginalName );
     @FixedCasedNames = NameCase( \@OriginalNames );
