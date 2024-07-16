@@ -315,10 +315,6 @@ L<http://cpants.cpanauthors.org/dist/Lingua-EN-NameCase>
 
 L<http://matrix.cpantesters.org/?dist=Lingua-EN-NameCase>
 
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Lingua-EN-NameCase>
-
 =item * CPAN Testers Dependencies
 
 L<http://deps.cpantesters.org/?module=Lingua::EN::NameCase>

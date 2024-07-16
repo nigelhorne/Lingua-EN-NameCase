@@ -15,6 +15,7 @@ t/91podcover.t
 t/94metatest.t
 t/95changedate.t
 t/96metatest.t
+t/eof.t
 t/eol.t
 t/links.t
 t/no404s.t
