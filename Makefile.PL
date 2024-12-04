@@ -6,6 +6,15 @@ use 5.006;
 
 use ExtUtils::MakeMaker;
 
+my $dist = {
+	COMPRESS => 'gzip -9f',
+	SUFFIX => 'gz'
+};
+
+if($^O eq 'darwin') {
+	$dist->{'TAR'} = 'gtar';
+}
+
 WriteMakefile(
 	NAME                => 'Lingua::EN::NameCase',
 	# AUTHOR              => 'Barbie <barbie@cpan.org>',
@@ -20,12 +29,13 @@ WriteMakefile(
 		'Exporter'              => '0',
 	}, TEST_REQUIRES => {
 		'IO::File' => '0',
+		'Test::DescribeMe' => 0,
 		'Test::Most' => 0,
 		'Test::Needs' => 0,
 	}, 'LIBS'              => [''],   # e.g., '-lm'
 	'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'
 	'INC'               => '',     # e.g., '-I/usr/include/other'
-	dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+	dist => $dist,
 	META_MERGE		=> {
 		'meta-spec' => { version => 2 },
 		resources => {
