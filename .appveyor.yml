@@ -15,6 +15,8 @@ environment:
   DEBIAN_FRONTEND: noninteractive
   PERL_MM_USE_DEFAULT: 1
   NO_NETWORK_TESTING: 1
+  AUTHOR_TESTING: 1
+  NONINTERACTIVE_TESTING: 1
 
 platform: x64
 
@@ -35,8 +37,9 @@ install:
   - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\tmp
   - cmd: set TMPDIR=%APPVEYOR_BUILD_FOLDER%\tmp
   - cpan App::cpanminus
+  - cmd: cpan -i Test::Needs Test::Most Test::DescribeMe
   - cmd: cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -qin --skip-satisfied
-  - cpanm -v --installdeps .
+  - cpanm -qin --skip-satisfied --installdeps .
   - cmd: 'echo End install at: & time /t'
 
 build_script:
