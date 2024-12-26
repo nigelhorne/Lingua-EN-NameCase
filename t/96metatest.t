@@ -1,11 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 
+use Test::DescribeMe qw(author);
 use Test::More;
-
-# Skip if doing a regular install
-plan skip_all => "Author tests not required for installation"
-    unless ( $ENV{AUTHOR_TESTING} );
 
 eval 'use Test::CPAN::Meta::JSON';
 plan skip_all => 'Test::CPAN::Meta::JSON required for testing META.json files' if $@;
