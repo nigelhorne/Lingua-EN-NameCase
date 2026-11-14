@@ -5,6 +5,7 @@ requires 'Exporter';
 requires 'Readonly';
 recommends 'Sub::Private', '0.09';    # optional; needs Perl 5.14+ and heavy dependencies
 requires 'autodie';
+requires 'IPC::System::Simple';    # needed by "use autodie qw(:all)"
 
 on 'test' => sub {
 	requires 'Errno';

@@ -8,6 +8,11 @@ use warnings;
 
 use Test::Most;
 
+# Sub::Private is optional.  Declare its variables so Perl does not warn that they
+# are "used only once" when the module is not installed.
+# Naming each variable twice is what makes Perl treat it as intentional.
+BEGIN { my @known = ( \%Sub::Private::config, \$Sub::Private::BYPASS ); }
+
 use Lingua::EN::NameCase qw( NameCase nc );
 
 subtest 'default messages carry the offending type' => sub {

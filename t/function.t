@@ -10,6 +10,11 @@ use strict;
 use warnings;
 
 use Test::Most;
+
+# Sub::Private is optional.  Declare its variables so Perl does not warn that they
+# are "used only once" when the module is not installed.
+# Naming each variable twice is what makes Perl treat it as intentional.
+BEGIN { my @known = ( \%Sub::Private::config, \$Sub::Private::BYPASS ); }
 use Test::Needs 'Test::Mockingbird';    # needs a recent Perl; skip the file without it
 use Test::Mockingbird;
 use lib 't/lib';

@@ -29,6 +29,7 @@ WriteMakefile(
 		'Exporter'              => '0',
 		'Readonly'              => '0',
 		'autodie'               => '0',
+		'IPC::System::Simple'   => '0',    # needed by "use autodie qw(:all)"
 	}, TEST_REQUIRES => {
 		'Errno' => '0',
 		'IO::File' => '0',

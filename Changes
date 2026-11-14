@@ -21,6 +21,7 @@ Revision history for Lingua-EN-NameCase
 	  an empty message text or a reference as text no longer breaks croak
 	Fix: no warnings for lone surrogates or non-Unicode code points
 	Added t/edge_cases.t
+	Fix: declare IPC::System::Simple, which "use autodie qw(:all)" needs
 	Faster: roman numerals 4x, particles 2x, whole nc() about 1.6x; post-nominal
 	  matching no longer scans every word boundary of a long name
 	NameCase(\@array) is now all-or-nothing: a bad element leaves it unchanged
