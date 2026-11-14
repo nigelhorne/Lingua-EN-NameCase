@@ -31,6 +31,7 @@ use autodie qw(:all);
 
 use Carp qw(croak);
 use Exporter ();
+use List::Util qw(max);
 use Readonly;
 
 # Private routines.  Sub::Private (enforce mode) makes a call from another
@@ -229,18 +230,20 @@ my $MAC_EXCEPTION = do {
 # Particles that are lowercase whatever the context.  Al and Van are only
 # particles when another word follows, otherwise they are forenames.
 my $ALWAYS_LOWER_PARTICLE = qr{
-	  Al(?=\s+\w)  # al, Arabic (or the forename Al)
+	  Al(?=\s++\w) # al, Arabic (or the forename Al)
 	| Ap\b         # ap, Welsh
 	| Dell[ae]\b   # della, delle, Italian
 	| D[aeiu]\b    # da, de, di Italian; du French
 	| De[lr]\b     # del Italian; der Dutch/Flemish
 	| L[eo]\b      # lo Italian; le French
-	| Van(?=\s+\w) # van, German (or the forename Van)
+	| Van(?=\s++\w) # van, German (or the forename Van)
 	| Von\b        # von, Dutch/Flemish
 }x;
 
 # Particles whose case depends on a configuration flag.
-my $HEBREW_PARTICLE  = qr{ (?<=\S\s) (?: Ben | Bat ) (?=\s+\w) }x;
+# "++" never gives back whitespace it has taken: that could not help and would
+# cost time on a long run of spaces.
+my $HEBREW_PARTICLE  = qr{ (?<=\S\s) (?: Ben | Bat ) (?=\s++\w) }x;
 my $SPANISH_CLASH    = qr{ (?: El | La ) \b }x;
 
 # Roman numerals up to LXXXIX.
@@ -264,9 +267,17 @@ for my $hebrew ( 0, 1 ) {
 	}
 }
 
-# Gate for the Mc/Mac rules.  Names ending in a, c, i, o, z or j are
-# typically Polish or Italian, and Mack/Macky/Mace have too few letters.
-my $MAC_NAME = qr{ \bMac[A-Za-z]{2,}[^aciozj]\b | \bMc }x;
+# Gate for the Mc/Mac rules.  The last letter of the word must be checked as a
+# letter: an older version let a space or punctuation stand in for it, so
+# "Macdonalda Smith" passed the test that is meant to exclude names ending in
+# a, c, i, o, z or j (typically Polish or Italian).
+my $MAC_NAME = qr{
+	  \b Mac            # "Mac" at the start of a word,
+	  [A-Za-z]{3,}+     # then three or more letters (Mack, Macy, Mace are too short),
+	  (?<! [aciozj] )   # the last of them not one of a c i o z j,
+	  \b                # and the word ends there
+	| \b Mc             # or "Mc" at the start of a word
+}x;
 
 Readonly my @POST_NOMINAL_INITIALS => qw(
 	VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG
@@ -310,8 +321,17 @@ my $POST_NOMINAL_REVERSED = do {
 	# Longest first, so the longest entry that fits wins, as before.
 	my $alternation = join '|',
 		map { quotemeta scalar reverse $_ } sort { length($b) <=> length($a) } keys %POST_NOMINAL_CANONICAL;
-	qr{ \A (\n?) ($alternation) (?!\w) }xi;
+	qr{
+		\A \n?            # an optional newline that ended the name
+		($alternation)    # an entry (reversed), captured
+		(?!\w)            # not preceded (in the original) by a word character
+	}xi;
 };
+
+# How much of the end of a name can matter: the longest entry, a final newline
+# and the character in front of the entry.  Only this much is copied and
+# reversed, so a huge name costs no more here than a short one.
+my $POST_NOMINAL_WINDOW = 2 + max map { length } @POST_NOMINAL_INITIALS;
 
 #--------------------------------------------------------------------------
 # Public functions
@@ -714,9 +734,11 @@ sub _fail {
 sub _safe_type {
 	my ($type) = @_;
 
+	# Cut first, then clean: a class name can be megabytes long.
+	$type = substr $type, 0, $MAX_TYPE_NAME_LENGTH;
 	$type =~ s{ [^\w:] }{?}gx;
 
-	return substr $type, 0, $MAX_TYPE_NAME_LENGTH;
+	return $type;
 }
 
 # Purpose:      Turn a message id into text, in the user's wording if they
@@ -736,7 +758,7 @@ sub _i18n {
 	# Force a plain string: a reference here would become the exception itself.
 	my $template = '' . ( $MESSAGES{$key} // $DEFAULT_MESSAGES{$key} // $key );
 
-	$template =~ s{ \{ (\w+) \} }{ $args->{$1} // "{$1}" }gex;
+	$template =~ s{ \{ (\w++) \} }{ $args->{$1} // "{$1}" }gex;
 
 	return $template;
 }
@@ -765,7 +787,7 @@ sub _mac_case {
 
 	# Taken from NameParse.pm: only touch names that look like Mc/Mac names.
 	if ( $name =~ $MAC_NAME ) {
-		$name =~ s{ \b (Ma?c) ([A-Za-z]+) }{$1\u$2}gx;
+		$name =~ s{ \b (Ma?c) ([A-Za-z]) }{$1\u$2}gx;
 
 		# Undo the capital for one-word exceptions such as Machado.
 		$name =~ s{$MAC_EXCEPTION}{Mac\l$1}g;
@@ -812,10 +834,15 @@ sub _roman_case {
 sub _postnominal_case {
 	my ($name) = @_;
 
-	my $reversed = reverse $name;
+	my $length = length $name;
+	my $tail   = $length > $POST_NOMINAL_WINDOW ? substr( $name, $length - $POST_NOMINAL_WINDOW ) : $name;
+	my $reversed = reverse $tail;
+
 	if ( $reversed =~ $POST_NOMINAL_REVERSED ) {
-		my ( $newline_length, $entry_length, $entry ) = ( length $1, length $2, lc scalar reverse $2 );
-		substr( $name, length($name) - $newline_length - $entry_length, $entry_length ) = $POST_NOMINAL_CANONICAL{$entry};
+		# Offsets are in the reversed tail, which ends where the name ends.
+		my ( $start, $end ) = ( $-[1], $+[1] );
+		my $entry = lc scalar reverse substr( $reversed, $start, $end - $start );
+		substr( $name, $length - $end, $end - $start ) = $POST_NOMINAL_CANONICAL{$entry};
 	}
 
 	return $name;
@@ -883,6 +910,17 @@ Case rules are the Unicode rules, whatever the locale.  Older versions used
 C<use locale>, which gave different answers on different machines.  Data in
 a legacy 8-bit code page must be decoded first (see L</ENCODING>).  Language
 rules are not applied, so Turkish "I" becomes "i", not a dotless "i".
+
+=item * The Mac test covers the whole string
+
+Whether the "Mac" rules apply is decided once for the whole string, not word
+by word.  A string that holds both a name such as "Mcdonald" and a name such
+as "Macchiato" will have both treated as Mac names.  Pass one name at a time.
+
+=item * Hebrew particles need one space
+
+"ben" and "bat" are recognised only when exactly one white space character
+separates them from the word in front.
 
 =item * Post-nominals only at the end
 

@@ -338,6 +338,31 @@ subtest '_postnominal_case: every entry in the module list works' => sub {
 	is_deeply( \@wrong, [], 'each entry is found at the end, after a space, hyphen, bracket or nothing' ) or diag explain [ @wrong[ 0 .. ( $#wrong < 9 ? $#wrong : 9 ) ] ];
 };
 
+# The post-nominal matcher only looks at the end of the name.  Check that the
+# cut-off cannot cause a false match or a miss at any length near the window.
+subtest '_postnominal_case: long names and the look-at-the-end window' => sub {
+	for my $prefix_length ( 0, 1, 10, 11, 12, 13, 14, 15, 16, 20, 100, $HUGE_WORD_LEN ) {
+		my $prefix = 'x' x $prefix_length;
+		is( Lingua::EN::NameCase::_postnominal_case( $prefix . ' Phd' ), $prefix . ' PhD', "found after $prefix_length characters" );
+		is( Lingua::EN::NameCase::_postnominal_case( $prefix . 'Phd' ), $prefix . 'Phd', "glued to a word of $prefix_length letters: not an entry" ) if $prefix_length;
+		is( Lingua::EN::NameCase::_postnominal_case( $prefix . ' Phd' . "\n" ), $prefix . " PhD\n", "with a final newline, $prefix_length" );
+		is( Lingua::EN::NameCase::_postnominal_case( $prefix . ' Phd ' ), $prefix . ' Phd ', "trailing space: not at the end, $prefix_length" );
+	}
+};
+
+# The Mac gate checks the last LETTER of the word.  It once accepted a space or
+# punctuation in that place, so Polish and Italian names were not excluded when
+# another word followed them.
+subtest '_mac_case: names ending in a c i o z j are left alone (regression)' => sub {
+	for my $name ( 'Macdonalda Smith', 'Macchiato Rossi', 'Machado Smith', 'Macewicz Kowal', 'Macko Da', 'Macci Gcie', "Macdonalda's Pub" ) {
+		is( Lingua::EN::NameCase::_mac_case($name), $name, "unchanged: $name" );
+	}
+	is( Lingua::EN::NameCase::_mac_case('Macdonald Smith'), 'MacDonald Smith', 'a Mac name followed by a word still works' );
+	is( Lingua::EN::NameCase::_mac_case("Macdonald's Pub"), "MacDonald's Pub", 'with an apostrophe' );
+	is( Lingua::EN::NameCase::_mac_case('Mcdonald Smith'), 'McDonald Smith', 'Mc names are not gated' );
+	is( Lingua::EN::NameCase::_mac_case('Mackenzie'), 'Mackenzie', 'exception list still applies' );
+};
+
 # ---------------------------------------------------------------- nc (pipeline, mocked helpers)
 subtest 'nc: calls helpers in order, honouring the switches' => sub {
 	my @order;
