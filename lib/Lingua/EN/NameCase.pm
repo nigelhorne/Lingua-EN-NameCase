@@ -35,45 +35,42 @@ our $VERSION = '1.21';
 
 =head1 SYNOPSIS
 
-	# Working with scalars; complementing lc and uc.
+	use Lingua::EN::NameCase qw( nc NameCase );
 
-	use Lingua::EN::NameCase qw( nc );
+	# Pattern 1: fix one name.  nc() is like lc() and uc().
+	my $name = nc('JOHN O\'CALLAGHAN');     # "John O'Callaghan"
+	my $same = nc( \$name );                # a reference works too
+	                                        # ($name itself is not changed)
 
-	my $OriginalName = 'Nigel';
-	my $FixedCasedName = nc( $OriginalName );
+	# Pattern 2: fix a list of names.  You get a new list back.
+	my @clean = NameCase( 'ANNE JONES', 'BOB MCVEY' );
 
-	$FixedCasedName = nc( \$OriginalName );
+	# Pattern 3: fix an array in place.
+	my @names = ( 'ANNE JONES', 'BOB MCVEY' );
+	NameCase( \@names );                    # @names is now fixed
 
-	# Working with arrays or array references.
+	# Pattern 4: clean data read from a file or database.
+	open( my $fh, '<:encoding(UTF-8)', 'names.txt' );
+	while ( my $line = <$fh> ) {
+		chomp $line;
+		print nc($line), "\n";
+	}
 
-	use Lingua::EN::NameCase 'NameCase';
+	# Pattern 5: change the rules for part of your program only.
+	{
+		local $Lingua::EN::NameCase::SPANISH = 1;   # keep "El" and "La"
+		print nc('EL PASO');                        # "El Paso"
+	}
+	print nc('EL PASO');                            # "el Paso"
 
-	$FixedCasedName = NameCase( $OriginalName );
-	my @OriginalNames = ('Nigel');
-	my @FixedCasedNames = NameCase( @OriginalNames );
+	# Pattern 6: catch bad input.
+	eval { nc( { not => 'a name' } ) };
+	print "Problem: $@" if $@;
 
-	$FixedCasedName = NameCase( \$OriginalName );
-	@FixedCasedNames = NameCase( \@OriginalNames );
-
-	NameCase( \@OriginalNames ) ; # In-place.
-
-	# NameCase will not change a scalar in-place, i.e.
-	NameCase( \$OriginalName ) ; # WRONG: null operation.
-
-	$Lingua::EN::NameCase::SPANISH = 1;
-	# Now 'El' => 'El' instead of (default) Greek 'El' => 'el'.
-	# Now 'La' => 'La' instead of (default) French 'La' => 'la'.
-
-	$Lingua::EN::NameCase::HEBREW = 0;
-	# Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein'
-	#   instead of (default) => 'Aharon ben Amram Ha-Kohein'.
-
-	$Lingua::EN::NameCase::ROMAN = 0;
-	# Now 'Li' => 'Li' instead of (default) 'Li' => 'LI'.
-
-	$Lingua::EN::NameCase::POSTNOMINAL = 0;
-	# Now 'PHD' => 'Phd' instead of (default) 'PHD' => 'PhD'.
-	# Leaving this set to 1 (the default) costs a little speed.
+	# Other switches (all are package variables):
+	#   $Lingua::EN::NameCase::HEBREW      = 0;  # "Ben" stays "Ben"
+	#   $Lingua::EN::NameCase::ROMAN       = 0;  # "Li" stays "Li", not "LI"
+	#   $Lingua::EN::NameCase::POSTNOMINAL = 0;  # "PHD" becomes "Phd"
 
 =head1 DESCRIPTION
 
@@ -257,6 +254,100 @@ my $POST_NOMINAL_AT_END = do {
 #--------------------------------------------------------------------------
 # Public functions
 
+=head1 COMMON PITFALLS
+
+=over 4
+
+=item * A scalar is never changed in place
+
+C<NameCase(\$name)> and C<nc(\$name)> read the string and return a new
+one.  Always use the return value:  C<$name = nc($name);>.
+Only an I<array reference> is changed in place.
+
+=item * Empty and undefined input
+
+C<undef>, an empty string and the string "0" are returned as they are.
+No warning is given.  Check for C<undef> yourself if you need to know.
+
+=item * Switches are global
+
+The four switches are package variables.  If you change one, it changes for
+the whole program until you change it back.  Use C<local> inside a block
+to limit the change.
+
+=item * Only the last word can be a post-nominal
+
+"JANE PHD SMITH" is not changed to "Jane PhD Smith".  "SMITH PHD" is
+changed to "Smith PhD".
+
+=item * One name per string, with no extra text
+
+"MR. AND MRS. SMITH" and similar text get the same treatment as a name.
+Words like "Of" are not changed to "of".
+
+=item * The result is a guess
+
+Some names are cased wrongly.  For example "MACINNES" becomes "Macinnes".
+Check important data by hand.  See L</LIMITATIONS>.
+
+=item * Wrong number of arguments
+
+C<nc> takes at most one argument.  C<NameCase> in scalar context takes
+exactly one.  Anything else stops the program with an error message,
+so wrap the call in C<eval> if the input is not trusted.
+
+=item * C<nc()> with no argument uses C<$_>
+
+This is the same as the built-in C<lc>.  It can surprise you inside a loop.
+
+=back
+
+=head1 ENCODING
+
+The module works on Perl character strings.  Decode your input first,
+for example with C<Encode::decode('UTF-8', $bytes)> or by reading a file
+with C<< open(my $fh, '<:encoding(UTF-8)', $file) >>.  Print the result
+through an encoded handle, for example C<< binmode(STDOUT, ':encoding(UTF-8)') >>.
+
+=over 4
+
+=item * Safe (decoded characters)
+
+Accented letters ("EMILE ZOLA" with an accent), Greek and other alphabets
+that have upper and lower case, and emojis.  An emoji is left as it is,
+and the words around it are fixed: C<john E<lt>emojiE<gt> smith> becomes
+C<John E<lt>emojiE<gt> Smith>.
+
+=item * Not safe (raw bytes)
+
+A UTF-8 byte string that was not decoded.  The ASCII letters are fixed, but
+the bytes of non-ASCII letters are left alone and are not changed to
+capitals.
+
+=item * Scripts without case
+
+Chinese, Japanese, Korean, Arabic, Hebrew and similar text is returned
+unchanged.  It is safe to pass in.
+
+=item * Apostrophes
+
+Only the plain apostrophe (C<'>) is understood in the 's rule.
+"FRED'S" becomes "Fred's", but "FRED" followed by a curly apostrophe and "S"
+becomes "Fred" followed by the curly apostrophe and a capital "S".
+
+=item * Sharp s
+
+The German sharp s at the start of a word becomes "Ss".
+
+=item * Error messages
+
+The built-in messages are plain ASCII English.  Text you put in
+C<%MESSAGES> may be any characters; use character strings.
+
+=back
+
+The module uses C<use locale>.  See L</LIMITATIONS>.
+
 =head1 FUNCTIONS
 
 =head2 NameCase
@@ -350,23 +441,6 @@ No arguments were given, or several were given in scalar context.
 Pass exactly one value, or call in list context.
 
 =back
-
-=head3 FORMAL SPECIFICATION
-
-	┌─ NameCase ─────────────────────────────────────────────
-	│ args? : seq ANY
-	│ ctx?  : { list, scalar, void }
-	│ out!  : seq STRING ∪ STRING ∪ ARRAYREF
-	├────────────────────────────────────────────────────────
-	│ ref(head args?) ∉ { ARRAY, SCALAR, ∅ } ⇒ croak usage_namecase
-	│ ctx? = list ∧ (#args? > 1 ∨ ref(head args?) = ARRAY)
-	│     ⇒ out! = nc ∘ (elements args?)
-	│ ctx? ≠ list ∧ ref(head args?) = ARRAY
-	│     ⇒ head args? ' = nc ∘ (head args?) ∧ out! = head args?
-	│ ref(head args?) = SCALAR ⇒ out! = nc(↑(head args?))
-	│ ref(head args?) = ∅ ∧ #args? = 1 ⇒ out! = nc(head args?)
-	│ otherwise ⇒ croak single_arg
-	└────────────────────────────────────────────────────────
 
 =head3 PSEUDOCODE
 
@@ -474,20 +548,6 @@ More than one argument, or a reference that is not a scalar reference,
 was supplied (C<{got}> names the type).  Pass one string or C<\$string>.
 
 =back
-
-=head3 FORMAL SPECIFICATION
-
-	┌─ nc ───────────────────────────────────────────────────
-	│ name? : STRING ∪ ↑STRING ∪ {⊥}
-	│ out!  : STRING ∪ {⊥}
-	├────────────────────────────────────────────────────────
-	│ #args > 1 ∨ ref(name?) ∉ { ∅, SCALAR } ⇒ croak usage_nc
-	│ value = (name? ∈ ↑STRING ⇒ ↑name?  ∨  name?)
-	│ value ∈ {⊥, "", "0"} ⇒ out! = value
-	│ otherwise
-	│   out! = postnominal ∘ roman ∘ particles ∘ mac ∘ base (value)
-	│   where roman and postnominal apply only when enabled
-	└────────────────────────────────────────────────────────
 
 =head3 PSEUDOCODE
 
@@ -750,7 +810,115 @@ L<http://deps.cpantesters.org/?module=Lingua::EN::NameCase>
 
 Thanks to Kim Ryan <kimaryan@ozemail.com.au> for his Mc/Mac solution.
 
-=head1 COPYRIGHT
+=head1 FORMAL SPECIFICATION
+
+This section is for readers who know Z notation.  It is the only part of
+this file that is not plain ASCII.  Each schema describes one function.
+A prime (') marks a value after the call.  C<ARGS> is the list of arguments,
+C<ANY> is any Perl value, and C<STRING> is a Perl string.
+
+=head2 NameCase
+
+	┌─ NameCase ─────────────────────────────────────────────
+	│ args? : seq ANY
+	│ ctx?  : { list, scalar, void }
+	│ out!  : seq STRING ∪ STRING ∪ ARRAYREF
+	├────────────────────────────────────────────────────────
+	│ ref(head args?) ∉ { ARRAY, SCALAR, ∅ } ⇒ croak usage_namecase
+	│ ctx? = list ∧ (#args? > 1 ∨ ref(head args?) = ARRAY)
+	│     ⇒ out! = nc ∘ (elements args?)
+	│ ctx? ≠ list ∧ ref(head args?) = ARRAY
+	│     ⇒ head args? ' = nc ∘ (head args?) ∧ out! = head args?
+	│ ref(head args?) = SCALAR ⇒ out! = nc(↑(head args?))
+	│ ref(head args?) = ∅ ∧ #args? = 1 ⇒ out! = nc(head args?)
+	│ otherwise ⇒ croak single_arg
+	└────────────────────────────────────────────────────────
+
+=head2 nc
+
+	┌─ nc ───────────────────────────────────────────────────
+	│ name? : STRING ∪ ↑STRING ∪ {⊥}
+	│ out!  : STRING ∪ {⊥}
+	├────────────────────────────────────────────────────────
+	│ #args > 1 ∨ ref(name?) ∉ { ∅, SCALAR } ⇒ croak usage_nc
+	│ value = (name? ∈ ↑STRING ⇒ ↑name?  ∨  name?)
+	│ value ∈ {⊥, "", "0"} ⇒ out! = value
+	│ otherwise
+	│   out! = postnominal ∘ roman ∘ particles ∘ mac ∘ base (value)
+	│   where roman and postnominal apply only when enabled
+	└────────────────────────────────────────────────────────
+
+=head2 Configuration
+
+	┌─ Config ───────────────────────────────────────────────
+	│ HEBREW, SPANISH, ROMAN, POSTNOMINAL : { 0, 1 }
+	│ MESSAGES : KEY ⇸ STRING
+	└────────────────────────────────────────────────────────
+	┌─ Init ─────────────────────────────────────────────────
+	│ Config'
+	├────────────────────────────────────────────────────────
+	│ HEBREW' = 1 ∧ SPANISH' = 0 ∧ ROMAN' = 1 ∧ POSTNOMINAL' = 1
+	│ MESSAGES' = ∅
+	└────────────────────────────────────────────────────────
+	┌─ Set ──────────────────────────────────────────────────
+	│ ΔConfig ; flag? : { HEBREW, SPANISH, ROMAN, POSTNOMINAL } ; v? : { 0, 1 }
+	├────────────────────────────────────────────────────────
+	│ flag?' = v? ∧ all other variables are unchanged
+	└────────────────────────────────────────────────────────
+
+nc and NameCase read Config and never change it (ΞConfig).
+
+=head1 STATE DIAGRAM
+
+The module keeps no data between calls except the configuration.  So there
+are two small machines: the configuration, and what happens during one call.
+
+Configuration (the four switches and C<%MESSAGES>):
+
+	  use Lingua::EN::NameCase
+	            |
+	            v
+	   +-----------------+   set a switch or %MESSAGES key   +-----------------+
+	   |    DEFAULTS     |---------------------------------->|   CUSTOMISED    |
+	   | HEBREW=1        |   action: later calls use it      | any switch or   |
+	   | SPANISH=0       |<----------------------------------| message differs |
+	   | ROMAN=1         |   set back, or leave a block      +-----------------+
+	   | POSTNOMINAL=1   |   that used "local"                  |          ^
+	   +-----------------+                                      +----------+
+	                                                            set again
+
+Both states accept every call below.  Calls never change the configuration.
+
+One call to C<nc> or C<NameCase>:
+
+	 nc(...) / NameCase(...)
+	        |
+	        v
+	  +------------+  bad type, wrong count   +----------+
+	  | VALIDATING |------------------------->|  FAILED  |
+	  +------------+  action: croak with the  +----------+
+	        |         message (usage_nc,       (the caller
+	        | ok      usage_namecase,           gets an
+	        v         single_arg)               exception)
+	  +------------+  undef, "" or "0"        +----------+
+	  |  READING   |------------------------->|   DONE   |
+	  +------------+  action: return it as is +----------+
+	        |                                       ^
+	        | has text                              |
+	        v                                       |
+	  +------------+  base case, Mc/Mac, particles,  |
+	  |   CASING   |  roman numerals (if ROMAN),     |
+	  +------------+  post-nominal (if POSTNOMINAL)  |
+	        |                                       |
+	        +---------------------------------------+
+	          action: return the new string
+
+	  NameCase only: an array ref in scalar or void context goes from
+	  CASING to DONE after replacing each element (the only side effect
+	  on caller data), and returns the array ref.
+
+=head1 LICENSE AND COPYRIGHT
+
 
 Copyright (c) Mark Summerfield 1998-2014. All Rights Reserved.
 Copyright (c) Barbie 2014-2015. All Rights Reserved.
