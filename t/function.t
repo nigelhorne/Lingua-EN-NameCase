@@ -10,8 +10,10 @@ use strict;
 use warnings;
 
 use Test::Most;
+use Test::Needs 'Test::Mockingbird';    # needs a recent Perl; skip the file without it
 use Test::Mockingbird;
-use Test::Returns;
+use lib 't/lib';
+use ReturnsOk;
 use Test::Memory::Cycle;
 use Readonly;
 use Scalar::Util qw(weaken);
@@ -658,6 +660,7 @@ subtest 'switches: concurrent configurations do not leak' => sub {
 
 # ---------------------------------------------------------------- encapsulation
 subtest 'enforcement: private routines refuse outside callers' => sub {
+	plan skip_all => 'Sub::Private is not installed (it is optional)' unless $INC{'Sub/Private.pm'};
 	# Switch the test bypass off (prove also sets HARNESS_ACTIVE, a second bypass).
 	local $Sub::Private::BYPASS = 0;
 	local $Sub::Private::config{harness_bypass} = 0;

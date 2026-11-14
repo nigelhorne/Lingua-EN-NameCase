@@ -23,10 +23,12 @@ use File::Temp qw(tempdir);
 use POSIX ();
 use Readonly;
 use Scalar::Util qw(tainted);
+use Test::Needs 'Test::Mockingbird';    # needs a recent Perl; skip the file without it
 use Test::Mockingbird;
 use Test::Most;
 use Test::Needs;
-use Test::Returns;
+use lib 't/lib';
+use ReturnsOk;
 
 use Lingua::EN::NameCase qw( NameCase nc );
 
@@ -460,6 +462,7 @@ subtest 'taint mode' => sub {
 
 # Purpose: private routines refuse outside callers, including the newest one.
 subtest 'private routines cannot be reached from outside' => sub {
+	plan skip_all => 'Sub::Private is not installed (it is optional)' unless $INC{'Sub/Private.pm'};
 	local $Sub::Private::BYPASS = 0;
 	local $Sub::Private::config{harness_bypass} = 0;
 	for my $private (qw( _i18n _fail _safe_type _base_case _mac_case _particle_case _roman_case _postnominal_case )) {

@@ -12,7 +12,8 @@ use warnings;
 
 use Errno qw(ENOENT);
 use Test::Most;
-use Test::Returns;
+use lib 't/lib';
+use ReturnsOk;
 use Readonly;
 
 use Lingua::EN::NameCase qw( NameCase nc );

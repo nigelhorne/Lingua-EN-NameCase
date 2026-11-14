@@ -3,7 +3,7 @@
 requires 'Carp';
 requires 'Exporter';
 requires 'Readonly';
-requires 'Sub::Private', '0.09';
+recommends 'Sub::Private', '0.09';    # optional; needs Perl 5.14+ and heavy dependencies
 requires 'autodie';
 
 on 'test' => sub {
@@ -19,9 +19,8 @@ on 'test' => sub {
 	requires 'JSON::PP';
 	requires 'Test::Memory::Cycle';
 	requires 'Test::Mockingbird';
-	requires 'Test::Returns';
+	recommends 'Test::Returns';    # needs Perl 5.26+; t/lib/ReturnsOk.pm falls back without it
 	requires 'Test::Without::Module';
-	requires 'Test::Returns';
 };
 
 on 'develop' => sub {

@@ -13,6 +13,7 @@ t/11examples.t
 t/12badcalls.t
 t/function.t
 t/integration.t
+t/lib/ReturnsOk.pm
 t/locales.t
 t/messages.t
 t/unit.t

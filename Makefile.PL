@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use 5.008;
+use 5.010;
 
 use ExtUtils::MakeMaker;
 
@@ -28,7 +28,6 @@ WriteMakefile(
 		'Carp'                  => '0',
 		'Exporter'              => '0',
 		'Readonly'              => '0',
-		'Sub::Private'          => '0.09',
 		'autodie'               => '0',
 	}, TEST_REQUIRES => {
 		'Errno' => '0',
@@ -43,15 +42,17 @@ WriteMakefile(
 		'JSON::PP' => 0,
 		'Test::Memory::Cycle' => 0,
 		'Test::Mockingbird' => 0,
-		'Test::Returns' => 0,
 		'Test::Without::Module' => 0,
-		'Test::Returns' => 0,
 	}, 'LIBS'              => [''],   # e.g., '-lm'
 	'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'
 	'INC'               => '',     # e.g., '-I/usr/include/other'
 	dist => $dist,
 	META_MERGE		=> {
 		'meta-spec' => { version => 2 },
+		prereqs => {
+			runtime => { recommends => { 'Sub::Private' => '0.09' } },
+			test => { recommends => { 'Test::Returns' => '0' } },
+		},
 		resources => {
 			repository => {
 				type => 'git',

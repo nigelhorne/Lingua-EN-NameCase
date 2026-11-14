@@ -33,9 +33,20 @@ use Carp qw(croak);
 use Exporter ();
 use Readonly;
 
-# Enforce mode: a private routine called from outside this package croaks,
-# rather than silently working because the symbol is still visible.
-use Sub::Private { mode => 'enforce' };
+# Private routines.  Sub::Private (enforce mode) makes a call from another
+# package croak.  It is optional: it needs a recent Perl and several modules,
+# and the module is just as correct without it, so a missing Sub::Private
+# means only that the internals are not locked.
+BEGIN {
+	eval {
+		require Sub::Private;
+		Sub::Private->import(
+			{ mode => 'enforce' },
+			qw( _i18n _fail _safe_type _base_case _mac_case _particle_case _roman_case _postnominal_case )
+		);
+		1;
+	};
+}
 
 our @ISA       = qw( Exporter );
 our @EXPORT    = qw( nc );
@@ -645,8 +656,7 @@ sub nc {
 }
 
 #--------------------------------------------------------------------------
-# Private functions.  Sub::Private (enforce mode) makes calls from other
-# packages croak.
+# Private functions (locked by Sub::Private when it is installed; see above).
 
 # Purpose:      Raise a localised error.
 # Entry:        $key is a message id; $args is an optional hashref of
@@ -654,7 +664,7 @@ sub nc {
 # Exit status:  Never returns.
 # Side effects: Croaks, reporting the error at the caller of the public
 #               function (Carp skips frames inside this package).
-sub _fail :Private {
+sub _fail {
 	my ( $key, $args ) = @_;
 
 	# The type name may come from an attacker (a class name can hold newlines
@@ -677,7 +687,7 @@ sub _fail :Private {
 # Exit status:  Returns the string with every character other than a word
 #               character or colon replaced by "?", cut to a fixed length.
 # Side effects: None.
-sub _safe_type :Private {
+sub _safe_type {
 	my ($type) = @_;
 
 	$type =~ s{ [^\w:] }{?}gx;
@@ -692,7 +702,7 @@ sub _safe_type :Private {
 #               an unknown {name} is left as written.
 # Exit status:  Returns the message string; an unknown key is returned as is.
 # Side effects: None.
-sub _i18n :Private {
+sub _i18n {
 	my ( $key, $args ) = @_;
 
 	# A missing key is a programming error, but it must not hide the real
@@ -712,7 +722,7 @@ sub _i18n :Private {
 # Entry:        $name is a non-empty string.
 # Exit status:  Returns the converted string.
 # Side effects: None.
-sub _base_case :Private {
+sub _base_case {
 	my ($name) = @_;
 
 	$name = lc $name;
@@ -726,7 +736,7 @@ sub _base_case :Private {
 # Entry:        $name has been through _base_case().
 # Exit status:  Returns the converted string.
 # Side effects: None.
-sub _mac_case :Private {
+sub _mac_case {
 	my ($name) = @_;
 
 	# Taken from NameParse.pm: only touch names that look like Mc/Mac names.
@@ -746,7 +756,7 @@ sub _mac_case :Private {
 # Entry:        $name has been through _base_case().
 # Exit status:  Returns the converted string.
 # Side effects: None.
-sub _particle_case :Private {
+sub _particle_case {
 	my ($name) = @_;
 
 	# Only the first letter of a particle is ever changed, so one pass over
@@ -767,7 +777,7 @@ sub _particle_case :Private {
 # Entry:        $name has been through _base_case().
 # Exit status:  Returns the converted string.
 # Side effects: None.
-sub _roman_case :Private {
+sub _roman_case {
 	my ($name) = @_;
 
 	$name =~ s{ \b ($ROMAN_NUMERAL) \b }{\U$1}gx;
@@ -779,7 +789,7 @@ sub _roman_case :Private {
 # Entry:        $name has been through _base_case().
 # Exit status:  Returns the converted string.
 # Side effects: None.
-sub _postnominal_case :Private {
+sub _postnominal_case {
 	my ($name) = @_;
 
 	$name =~ s{$POST_NOMINAL_AT_END}{ $POST_NOMINAL_CANONICAL{ lc $1 } }e;
@@ -839,9 +849,11 @@ of the messages needs it.
 
 =item * Encapsulation
 
-The internal routines are guarded with L<Sub::Private> in enforce mode.
-L<Sub::Protected> is not used because the module has no classes or methods
-to protect.
+The internal routines are guarded with L<Sub::Private> in enforce mode, but
+only if that module is installed.  It is optional because it needs Perl 5.14
+or later and heavy dependencies; without it the internals are ordinary
+subroutines whose names start with an underscore.  L<Sub::Protected> is not
+used because the module has no classes or methods to protect.
 
 =back
 

@@ -45,6 +45,7 @@ subtest 'private routines (white-box, called from inside the package)' => sub {
 };
 
 subtest 'private routines cannot be called from other packages' => sub {
+	plan skip_all => 'Sub::Private is not installed (it is optional)' unless $INC{'Sub/Private.pm'};
 	# prove sets HARNESS_ACTIVE, which Sub::Private treats as a bypass.
 	local $Sub::Private::config{harness_bypass} = 0;
 	throws_ok { Lingua::EN::NameCase::_base_case('x') } qr/is a private subroutine of Lingua::EN::NameCase and cannot be called from main/, '_base_case is private';

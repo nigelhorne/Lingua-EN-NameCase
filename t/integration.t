@@ -6,10 +6,10 @@
 #  * The module is a set of functions with no constructor, so there is no
 #    new() to call; "independent instances" are separate scopes, separate
 #    importing packages and separate processes.
-#  * It has no optional dependencies.  Its hard dependencies (Readonly,
-#    Sub::Private) are tested with Test::Without::Module to prove a clear
-#    failure; the one recommended partner (Lingua::EN::NameParse) is tested
-#    both present and absent.
+#  * Its one optional dependency, Sub::Private, and its recommended partner
+#    (Lingua::EN::NameParse) are tested present and absent with
+#    Test::Without::Module; the hard dependency Readonly is tested for a
+#    clear failure.
 #  * It touches no files, network or database, so there is nothing to
 #    revoke permissions on or to sabotage upstream.  The file and JSON
 #    workflows below are the realistic pipelines around it, and they check
@@ -23,9 +23,11 @@ use File::Spec;
 use File::Temp qw(tempdir);
 use JSON::PP;
 use Test::Most;
+use Test::Needs 'Test::Mockingbird';    # needs a recent Perl; skip the file without it
 use Test::Mockingbird;
 use Test::Needs;
-use Test::Returns;
+use lib 't/lib';
+use ReturnsOk;
 use Readonly;
 use Time::HiRes qw(time);
 
@@ -287,17 +289,38 @@ subtest 'large batch finishes and stays correct' => sub {
 };
 
 # ---------------------------------------------------------------- dependencies
-# Purpose: hard dependencies missing: loading fails at once with a message
-# that names the missing module (no half-working module).
-subtest 'missing required modules fail clearly' => sub {
+# Purpose: Readonly is a hard dependency: missing, loading fails at once
+# with a message that names it (no half-working module).
+subtest 'missing required module fails clearly' => sub {
 	plan skip_all => 'child perl not used on this platform' if $^O eq 'MSWin32';
-	for my $hidden ( ['Readonly'], ['Sub::Private'], [ 'Readonly', 'Sub::Private' ] ) {
-		my $out = run_child( $hidden, 'eval { require Lingua::EN::NameCase; 1 } ? print "LOADED\n" : print "FAILED: $@\n";' );
-		like( $out, qr/^FAILED: .*\Q$hidden->[0]\E/s, 'load fails and names ' . join( ' + ', @{$hidden} ) );
-		unlike( $out, qr/LOADED/, '... and does not load' );
-	}
-	my $out = run_child( [], 'require Lingua::EN::NameCase; print Lingua::EN::NameCase::nc("JOHN SMITH"), "\n";' );
+	my $out = run_child( ['Readonly'], 'eval { require Lingua::EN::NameCase; 1 } ? print "LOADED\n" : print "FAILED: $@\n";' );
+	like( $out, qr/^FAILED: .*Readonly/s, 'load fails and names Readonly' );
+	unlike( $out, qr/LOADED/, '... and does not load' );
+
+	$out = run_child( [], 'require Lingua::EN::NameCase; print Lingua::EN::NameCase::nc("JOHN SMITH"), "\n";' );
 	is( $out, "John Smith\n", 'control: with nothing hidden it works' );
+};
+
+# Purpose: Sub::Private is optional.  Without it the module must load and
+# give the same answers; the only difference is that the internals are not
+# locked.
+subtest 'optional Sub::Private present or absent' => sub {
+	plan skip_all => 'child perl not used on this platform' if $^O eq 'MSWin32';
+	local $ENV{HARNESS_ACTIVE} = 0;    # prove sets it, and Sub::Private then skips its checks
+
+	my $names = 'print Lingua::EN::NameCase::nc("DR SARAH BEETLE"), "|", join(",", Lingua::EN::NameCase::NameCase("a b", "c d")), "\n";';
+	my $call_private = 'print eval { Lingua::EN::NameCase::_base_case("x") } // "REFUSED", "\n";';
+
+	my $without = run_child( ['Sub::Private'], "require Lingua::EN::NameCase; $names $call_private" );
+	is( $without, "Dr Sarah Beetle|A B,C D\nX\n", 'hidden: loads, same answers, internals open' );
+
+	SKIP: {
+		skip 'Sub::Private is not installed', 2 unless $INC{'Sub/Private.pm'};
+		my $with = run_child( [], "require Lingua::EN::NameCase; $names $call_private" );
+		is( $with, "Dr Sarah Beetle|A B,C D\nREFUSED\n", 'present: same answers, internals locked' );
+		like( run_child( [], 'require Lingua::EN::NameCase; eval { Lingua::EN::NameCase::_base_case("x") }; print $@;' ),
+			qr/^_base_case\(\) is a private subroutine of Lingua::EN::NameCase and cannot be called from main/, 'present: exact refusal message' );
+	}
 };
 
 # Purpose: the optional partner module (NameParse) may be present or
