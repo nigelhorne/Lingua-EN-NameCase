@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use 5.006;
+use 5.008;
 
 use ExtUtils::MakeMaker;
 
@@ -27,8 +27,13 @@ WriteMakefile(
 	PREREQ_PM => {
 		'Carp'                  => '0',
 		'Exporter'              => '0',
+		'Readonly'              => '0',
+		'Sub::Private'          => '0.09',
+		'autodie'               => '0',
 	}, TEST_REQUIRES => {
+		'Errno' => '0',
 		'IO::File' => '0',
+		'POSIX' => '0',
 		'Test::DescribeMe' => 0,
 		'Test::Most' => 0,
 		'Test::Needs' => 0,

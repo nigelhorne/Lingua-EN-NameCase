@@ -11,6 +11,8 @@ t/00use.t
 t/10namecase.t
 t/11examples.t
 t/12badcalls.t
+t/locales.t
+t/messages.t
 t/90podtest.t
 t/91podcover.t
 t/94metatest.t

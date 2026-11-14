@@ -1,16 +1,29 @@
 package Lingua::EN::NameCase;
 
+=encoding utf8
+
 =head1 NAME
 
-Lingua::EN::NameCase - Correctly case a person's name from UPERCASE or lowcase
+Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercase
 
 =cut
 
-use warnings;
 use strict;
+use warnings;
 use locale;
+use autodie qw(:all);
 
-use vars qw( $VERSION @ISA @EXPORT @EXPORT_OK $HEBREW $SPANISH $ROMAN $POSTNOMINAL );
+use Carp qw(croak);
+use Exporter ();
+use Readonly;
+
+# Enforce mode: a private routine called from outside this package croaks,
+# rather than silently working because the symbol is still visible.
+use Sub::Private { mode => 'enforce' };
+
+our @ISA       = qw( Exporter );
+our @EXPORT    = qw( nc );
+our @EXPORT_OK = qw( NameCase nc );
 
 =head1 VERSION
 
@@ -22,45 +35,45 @@ our $VERSION = '1.21';
 
 =head1 SYNOPSIS
 
-    # Working with scalars; complementing lc and uc.
+	# Working with scalars; complementing lc and uc.
 
-    use Lingua::EN::NameCase qw( nc );
+	use Lingua::EN::NameCase qw( nc );
 
-    my $OriginalName = 'Nigel';
-    my $FixedCasedName  = nc( $OriginalName );
+	my $OriginalName = 'Nigel';
+	my $FixedCasedName = nc( $OriginalName );
 
-    $FixedCasedName  = nc( \$OriginalName );
+	$FixedCasedName = nc( \$OriginalName );
 
-    # Working with arrays or array references.
+	# Working with arrays or array references.
 
-    use Lingua::EN::NameCase 'NameCase';
+	use Lingua::EN::NameCase 'NameCase';
 
-    $FixedCasedName  = NameCase( $OriginalName );
-    my @OriginalNames = ('Nigel');
-    my @FixedCasedNames = NameCase( @OriginalNames );
+	$FixedCasedName = NameCase( $OriginalName );
+	my @OriginalNames = ('Nigel');
+	my @FixedCasedNames = NameCase( @OriginalNames );
 
-    $FixedCasedName  = NameCase( \$OriginalName );
-    @FixedCasedNames = NameCase( \@OriginalNames );
+	$FixedCasedName = NameCase( \$OriginalName );
+	@FixedCasedNames = NameCase( \@OriginalNames );
 
-    NameCase( \@OriginalNames ) ; # In-place.
+	NameCase( \@OriginalNames ) ; # In-place.
 
-    # NameCase will not change a scalar in-place, i.e.
-    NameCase( \$OriginalName ) ; # WRONG: null operation.
+	# NameCase will not change a scalar in-place, i.e.
+	NameCase( \$OriginalName ) ; # WRONG: null operation.
 
-    $Lingua::EN::NameCase::SPANISH = 1;
-    # Now 'El' => 'El' instead of (default) Greek 'El' => 'el'.
-    # Now 'La' => 'La' instead of (default) French 'La' => 'la'.
+	$Lingua::EN::NameCase::SPANISH = 1;
+	# Now 'El' => 'El' instead of (default) Greek 'El' => 'el'.
+	# Now 'La' => 'La' instead of (default) French 'La' => 'la'.
 
-    $Lingua::EN::NameCase::HEBREW = 0;
-    # Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein'
-    #   instead of (default) => 'Aharon ben Amram Ha-Kohein'.
+	$Lingua::EN::NameCase::HEBREW = 0;
+	# Now 'Aharon BEN Amram Ha-Kohein' => 'Aharon Ben Amram Ha-Kohein'
+	#   instead of (default) => 'Aharon ben Amram Ha-Kohein'.
 
-    $Lingua::EN::NameCase::ROMAN = 0;
-    # Now 'Li' => 'Li' instead of (default) 'Li' => 'LI'.
+	$Lingua::EN::NameCase::ROMAN = 0;
+	# Now 'Li' => 'Li' instead of (default) 'Li' => 'LI'.
 
-    $Lingua::EN::NameCase::POSTNOMINAL = 0;
-    # Now 'PHD' => 'PhD' instead of (default) 'PHD' => 'Phd'.
-    # Setting this to 1 (the default) really slows this module down
+	$Lingua::EN::NameCase::POSTNOMINAL = 0;
+	# Now 'PHD' => 'Phd' instead of (default) 'PHD' => 'PhD'.
+	# Leaving this set to 1 (the default) costs a little speed.
 
 =head1 DESCRIPTION
 
@@ -75,119 +88,325 @@ correctly with them.
 NameCase currently correctly name cases names which include any of the
 following:
 
-    Mc, Mac, al, el, ap, da, de, delle, della, di, du, del, der,
-    la, le, lo, van and von.
+	Mc, Mac, al, el, ap, da, de, delle, della, di, du, del, der,
+	la, le, lo, van and von.
 
 It correctly deals with names which contain apostrophes and hyphens too.
 
 =head2 EXAMPLE FIXES
 
-    Original            Name Case
-    --------            ---------
-    KEITH               Keith
-    LEIGH-WILLIAMS      Leigh-Williams
-    MCCARTHY            McCarthy
-    O'CALLAGHAN         O'Callaghan
-    ST. JOHN            St. John
+	Original            Name Case
+	--------            ---------
+	KEITH               Keith
+	LEIGH-WILLIAMS      Leigh-Williams
+	MCCARTHY            McCarthy
+	O'CALLAGHAN         O'Callaghan
+	ST. JOHN            St. John
 
 plus "son (daughter) of" etc. in various languages, e.g.:
 
-    VON STREIT          von Streit
-    VAN DYKE            van Dyke
-    AP LLWYD DAFYDD     ap Llwyd Dafydd
-    etc.
+	VON STREIT          von Streit
+	VAN DYKE            van Dyke
+	AP LLWYD DAFYDD     ap Llwyd Dafydd
+	etc.
 
 plus names with roman numerals (up to 89, LXXXIX), e.g.:
 
-    henry viii          Henry VIII
-    louis xiv           Louis XIV
+	henry viii          Henry VIII
+	louis xiv           Louis XIV
+
+=head2 CONFIGURATION
+
+The behaviour is controlled by package variables, read on every call
+so they may be changed at any time:
+
+=over 4
+
+=item C<$Lingua::EN::NameCase::HEBREW> (default 1)
+
+Lowercase the Hebrew particles "ben" and "bat" when they follow another word.
+
+=item C<$Lingua::EN::NameCase::SPANISH> (default 0)
+
+Keep "El" and "La" capitalised (Spanish) instead of lowercasing them
+(Greek and French).
+
+=item C<$Lingua::EN::NameCase::ROMAN> (default 1)
+
+Upper-case roman numerals (I to LXXXIX).
+
+=item C<$Lingua::EN::NameCase::POSTNOMINAL> (default 1)
+
+Normalise a trailing post-nominal such as "PhD" or "MBE".
+
+=item C<%Lingua::EN::NameCase::MESSAGES>
+
+Overrides the text of an error message by key (see L</MESSAGES> under
+each routine).  The text may contain C<{name}> placeholders, which are
+replaced by the arguments given when the error is raised.
+This is the hook for translating the error messages.
+
+=back
 
 =cut
 
 #--------------------------------------------------------------------------
-# Modules
+# Public configuration.  These are package variables (not lexicals) because
+# they are a documented part of the API.
 
-use Carp;
-use Exporter();
-
-@ISA        = qw( Exporter );
-@EXPORT     = qw( nc );
-@EXPORT_OK  = qw( NameCase nc );
+our $HEBREW      = 1;
+our $SPANISH     = 0;
+our $ROMAN       = 1;
+our $POSTNOMINAL = 1;
+our %MESSAGES;
 
 #--------------------------------------------------------------------------
-# Variables
+# Constant data.  Readonly guards against accidental modification; the hot
+# path uses the pre-compiled structures built below, not these directly.
 
-$HEBREW         = 1;
-$SPANISH        = 0;
-$ROMAN          = 1;
-$POSTNOMINAL    = 1;
-
-my @POST_NOMINAL_INITIALS = qw(
-    VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG
-    DCMG KCIE KCVO DCVO KBE DBE CB CSI CMG CIE CVO CBE DSO LVO OBE ISO MVO MBE
-    IOM CGC RRC DSC MC DFC AFC ARRC OBI DCM CGM GM IDSM DSM MM DFM AFM SGM IOM
-    CPM QGM RVM BEM QPM QFSM QAM CPM MSM ERD VD TD UD ED RD VRD AE
-
-    PC ADC QHP QHS QHDS QHNS QHC SCJ J LJ QS SL QC KC JP DL MP MSP MSYP AM AM
-    MLA MEP  DBEnv DConstMgt DREst EdD DPhil PhD DLitt DSocSci MD EngD DD LLD
-    DProf MA MArch MAnth MSc MMORSE MMath MMathStat MPharm MPhil MSc MSci MSt
-    MRes MEng MChem MBiochem MSocSc MMus LLM BCL MPhys MComp MAcc MFin MBA MPA
-    MEd MEP MEnt MCGI MGeol MLitt MEarthSc MClinRes BA BSc LLB BEng MBChB FdA
-    FdSc FdEng PgDip PgD PgCert PgC PgCLTHE AUH AKC AUS HNC HNCert HND HNDip
-    DipHE Dip OND CertHE ACSM MCSM DIC AICSM ARSM ARCS LLB LLM BCL MJur DPhil
-    PhD LLD DipLP FCILEx GCILEx ACILEx CQSW DipSW BSW MSW FCILT CMILT MILT CPL
-    CTP CML PLS CTL DLP PLog EJLog ESLog EMLog JrLog Log SrLog BArch MArch ARB
-    RIBA RIAS RIAI RSAW MB BM BS BCh BChir MRCS FRCS MS MCh. MRCP FRCP MRCPCH
-    FRCPCH MRCPath MFPM FFPM BDS MRCPsych FRCPsych MRCOG FRCOG MCEM FCEM FRCA
-    FFPMRCA MRCGP FRCGP BSc MScChiro MChiro MSc DC LFHOM MFHOM FFHOM FADO FBDO
-    FCOptom MCOptom MOst DPT MCSP FCSP. SROT MSCR FSCR. CPhT RN VN RVN BVSc
-    BVetMed VetMB BVM&S MRCVS FRCVS FAWM PGCAP PGCHE PGCE PGDE BEd NPQH QTS
-    CSci CSciTeach RSci RSciTech CEng IEng EngTech ICTTech DEM MM CMarEng
-    CMarSci CMarTech IMarEng MarEngTech RGN SRN RMN RSCN SEN EN RNMH RN RM RN1
-    RNA RN2 RN3 RNMH RN4 RN5 RNLD RN6 RN8 RNC RN7 RN9 RHV RSN ROH RFHN SPAN
-    SPMH SPCN SPLD SPHP SCHM SCLD SPCC SPDN V100 V200 V300 LPE MSc
+# Error message templates, keyed by message id.  Kept as templates so a
+# translator can reorder the {placeholders}.
+Readonly my %DEFAULT_MESSAGES => (
+	usage_nc       => 'Usage: nc [[\\]$SCALAR] (got {got})',
+	usage_namecase => 'Usage: $SCALAR|@ARRAY = NameCase [\\]$SCALAR|@ARRAY (got {got})',
+	single_arg     => 'NameCase only accepts a single scalar, array or array ref',
 );
 
+# Reference types the functions accept.
+Readonly my %ACCEPTED_REF => ( SCALAR => 1, ARRAY => 1 );
+
+# Name fragments after "Mac" that are normally NOT capitalised,
+# e.g. Machado, Mackie.  Matched as prefixes, as they always have been.
+Readonly my @MAC_LOWERCASE_PREFIXES => qw(
+	Evicius Hado Har Hin Hlin Ias Iulis Kie Kle Klin Quarie Omber In
+	Kintosh Ken Hen Hiel Iol Kell Klem Krell Lin Key Kley Hell Hon
+);
+
+# One regex for the list above: "Mac" followed by an exception.
+Readonly my $MAC_EXCEPTION => do {
+	my $alternation = join '|', @MAC_LOWERCASE_PREFIXES;
+	qr{ \b Mac ($alternation) }x;
+};
+
+# Particles that are lowercase whatever the context.  Al and Van are only
+# particles when another word follows, otherwise they are forenames.
+Readonly my $ALWAYS_LOWER_PARTICLE => qr{
+	  Al(?=\s+\w)  # al, Arabic (or the forename Al)
+	| Ap\b         # ap, Welsh
+	| Dell[ae]\b   # della, delle, Italian
+	| D[aeiu]\b    # da, de, di Italian; du French
+	| De[lr]\b     # del Italian; der Dutch/Flemish
+	| L[eo]\b      # lo Italian; le French
+	| Van(?=\s+\w) # van, German (or the forename Van)
+	| Von\b        # von, Dutch/Flemish
+}x;
+
+# Particles whose case depends on a configuration flag.
+Readonly my $HEBREW_PARTICLE  => qr{ (?<=\S\s) (?: Ben | Bat ) (?=\s+\w) }x;
+Readonly my $SPANISH_CLASH    => qr{ (?: El | La ) \b }x;
+
+# Roman numerals up to LXXXIX.
+Readonly my $ROMAN_NUMERAL => qr{
+	(?: [Xx]{1,3} | [Xx][Ll]   | [Ll][Xx]{0,3} )?
+	(?: [Ii]{1,3} | [Ii][VvXx] | [Vv][Ii]{0,3} )?
+}x;
+
+# Gate for the Mc/Mac rules.  Names ending in a, c, i, o, z or j are
+# typically Polish or Italian, and Mack/Macky/Mace have too few letters.
+Readonly my $MAC_NAME => qr{ \bMac[A-Za-z]{2,}[^aciozj]\b | \bMc }x;
+
+Readonly my @POST_NOMINAL_INITIALS => qw(
+	VC GC KG LG KT LT KP GCB OM GCSI GCMG GCIE GCVO GBE CH KCB DCB KCSI KCMG
+	DCMG KCIE KCVO DCVO KBE DBE CB CSI CMG CIE CVO CBE DSO LVO OBE ISO MVO MBE
+	IOM CGC RRC DSC MC DFC AFC ARRC OBI DCM CGM GM IDSM DSM MM DFM AFM SGM IOM
+	CPM QGM RVM BEM QPM QFSM QAM CPM MSM ERD VD TD UD ED RD VRD AE
+
+	PC ADC QHP QHS QHDS QHNS QHC SCJ J LJ QS SL QC KC JP DL MP MSP MSYP AM AM
+	MLA MEP  DBEnv DConstMgt DREst EdD DPhil PhD DLitt DSocSci MD EngD DD LLD
+	DProf MA MArch MAnth MSc MMORSE MMath MMathStat MPharm MPhil MSc MSci MSt
+	MRes MEng MChem MBiochem MSocSc MMus LLM BCL MPhys MComp MAcc MFin MBA MPA
+	MEd MEP MEnt MCGI MGeol MLitt MEarthSc MClinRes BA BSc LLB BEng MBChB FdA
+	FdSc FdEng PgDip PgD PgCert PgC PgCLTHE AUH AKC AUS HNC HNCert HND HNDip
+	DipHE Dip OND CertHE ACSM MCSM DIC AICSM ARSM ARCS LLB LLM BCL MJur DPhil
+	PhD LLD DipLP FCILEx GCILEx ACILEx CQSW DipSW BSW MSW FCILT CMILT MILT CPL
+	CTP CML PLS CTL DLP PLog EJLog ESLog EMLog JrLog Log SrLog BArch MArch ARB
+	RIBA RIAS RIAI RSAW MB BM BS BCh BChir MRCS FRCS MS MCh. MRCP FRCP MRCPCH
+	FRCPCH MRCPath MFPM FFPM BDS MRCPsych FRCPsych MRCOG FRCOG MCEM FCEM FRCA
+	FFPMRCA MRCGP FRCGP BSc MScChiro MChiro MSc DC LFHOM MFHOM FFHOM FADO FBDO
+	FCOptom MCOptom MOst DPT MCSP FCSP. SROT MSCR FSCR. CPhT RN VN RVN BVSc
+	BVetMed VetMB BVM&S MRCVS FRCVS FAWM PGCAP PGCHE PGCE PGDE BEd NPQH QTS
+	CSci CSciTeach RSci RSciTech CEng IEng EngTech ICTTech DEM MM CMarEng
+	CMarSci CMarTech IMarEng MarEngTech RGN SRN RMN RSCN SEN EN RNMH RN RM RN1
+	RNA RN2 RN3 RNMH RN4 RN5 RNLD RN6 RN8 RNC RN7 RN9 RHV RSN ROH RFHN SPAN
+	SPMH SPCN SPLD SPHP SCHM SCLD SPCC SPDN V100 V200 V300 LPE MSc
+);
+
+# Built once at load time.  Matching one alternation against the end of the
+# name is far cheaper than the old loop of ~600 regex compilations per call.
+# Later entries win a case-insensitive tie, as in the sequential original.
+my %POST_NOMINAL_CANONICAL;
+$POST_NOMINAL_CANONICAL{ lc $_ } = $_ for @POST_NOMINAL_INITIALS;
+
+my $POST_NOMINAL_AT_END = do {
+	# Longest first so the regex engine never has to back off a shorter prefix.
+	my $alternation = join '|',
+		map { quotemeta } sort { length($b) <=> length($a) } keys %POST_NOMINAL_CANONICAL;
+	qr{ \b ($alternation) $ }xi;
+};
+
 #--------------------------------------------------------------------------
-# Functions
+# Public functions
+
+=head1 FUNCTIONS
 
 =head2 NameCase
 
 Takes a scalar, scalarref, array or arrayref, and changes the case of the
 contents, as appropriate. Essentially a wrapper around nc().
 
+=head3 PURPOSE
+
+Case one name, or a whole list of names, in one call.
+
+=head3 ARGS
+
+One scalar, one scalar reference, one array reference, or (in list context
+only) a list of scalars.
+
+=head3 RETURNS
+
+=over 4
+
+=item * List context with a list, or an array reference
+
+A list of name-cased copies.  The source is not modified.
+
+=item * Scalar or void context with an array reference
+
+The array is modified in place; the array reference is returned so calls
+can be chained.
+
+=item * Scalar or scalar reference
+
+A name-cased copy.  A scalar reference is I<not> modified (see L</LIMITATIONS>).
+
+=back
+
+=head3 SIDE EFFECTS
+
+Modifies the referenced array only in the in-place case above.
+Dies (via L<Carp/croak>) on bad arguments.
+
+=head3 USAGE
+
+See L</SYNOPSIS>.
+
+=head3 EXAMPLE
+
+	my @fixed = NameCase( 'JOHN SMITH', 'mary o\'neil' );
+	# ('John Smith', "Mary O'Neil")
+
+	my @names = ( 'ANNE JONES', 'BOB MCVEY' );
+	NameCase( \@names );
+	# @names is now ('Anne Jones', 'Bob McVey')
+
+	my $one = NameCase( 'DAVID VAN DYKE' );   # 'David van Dyke'
+
+=head3 API SPECIFICATION
+
+=head4 input
+
+	{
+		names => {
+			type     => 'arrayref',    # list of scalars, or one [] / \scalar
+			optional => 0,
+			min      => 1,
+		},
+	}
+
+A single hash reference, or any reference type other than SCALAR or ARRAY,
+is rejected.
+
+=head4 output
+
+	{ type => 'arrayref', element_type => 'string' }    # list context
+	{ type => 'string' }                                # one scalar
+	{ type => 'arrayref' }                              # in place
+
+=head3 MESSAGES
+
+=over 4
+
+=item C<usage_namecase>
+
+I<Usage: $SCALAR|@ARRAY = NameCase [\]$SCALAR|@ARRAY (got {got})>.
+The first argument was a reference of an unsupported type (C<{got}>).
+Pass a scalar, a scalar ref or an array ref.
+
+=item C<single_arg>
+
+I<NameCase only accepts a single scalar, array or array ref>.
+No arguments were given, or several were given in scalar context.
+Pass exactly one value, or call in list context.
+
+=back
+
+=head3 FORMAL SPECIFICATION
+
+	┌─ NameCase ─────────────────────────────────────────────
+	│ args? : seq ANY
+	│ ctx?  : { list, scalar, void }
+	│ out!  : seq STRING ∪ STRING ∪ ARRAYREF
+	├────────────────────────────────────────────────────────
+	│ ref(head args?) ∉ { ARRAY, SCALAR, ∅ } ⇒ croak usage_namecase
+	│ ctx? = list ∧ (#args? > 1 ∨ ref(head args?) = ARRAY)
+	│     ⇒ out! = nc ∘ (elements args?)
+	│ ctx? ≠ list ∧ ref(head args?) = ARRAY
+	│     ⇒ head args? ' = nc ∘ (head args?) ∧ out! = head args?
+	│ ref(head args?) = SCALAR ⇒ out! = nc(↑(head args?))
+	│ ref(head args?) = ∅ ∧ #args? = 1 ⇒ out! = nc(head args?)
+	│ otherwise ⇒ croak single_arg
+	└────────────────────────────────────────────────────────
+
+=head3 PSEUDOCODE
+
+	validate: reject refs that are neither ARRAY nor SCALAR
+	if list context and (more than one arg or an ARRAY ref):
+		return nc of each element
+	elsif ARRAY ref:
+		replace each element by nc(element); return the ref
+	elsif SCALAR ref:
+		return nc(dereferenced value)
+	elsif exactly one arg:
+		return nc(arg)
+	else:
+		croak single_arg
+
 =cut
 
 sub NameCase {
-    croak "Usage: \$SCALAR|\@ARRAY = NameCase [\\]\$SCALAR|\@ARRAY"
-        if ref $_[0] and ( ref $_[0] ne 'ARRAY' and ref $_[0] ne 'SCALAR' );
+	my $first = $_[0];
+	my $kind  = ref $first;    # '' for a plain scalar or no argument
 
-    local( $_ );
+	_fail( 'usage_namecase', { got => $kind } ) if $kind && !$ACCEPTED_REF{$kind};
 
-    if( wantarray and ( scalar @_ > 1 or ref $_[0] eq 'ARRAY' ) ) {
-        # We have received an array or array reference in a list context
-        # so we will return an array.
-        map { nc( $_ ) } @{ ref( $_[0] ) ? $_[0] : \@_ };
+	# We have an array, or several scalars, in list context: return a list.
+	if ( wantarray && ( @_ > 1 || $kind eq 'ARRAY' ) ) {
+		return map { nc($_) } @{ $kind eq 'ARRAY' ? $first : \@_ };
+	}
 
-    } elsif( ref $_[0] eq 'ARRAY' ) {
-        # We have received an array reference in a scalar or void context
-        # so we will work on the array in-place.
-        foreach ( @{ $_[0] } ) {
-            $_ = nc( $_ );
-        }
+	# An array ref in scalar/void context is converted in place, as that is
+	# the only way to be useful when no list is wanted.
+	if ( $kind eq 'ARRAY' ) {
+		$_ = nc($_) for @{$first};
+		return $first;
+	}
 
-    } elsif( ref $_[0] eq 'SCALAR' ) {
-        # We don't work on scalar references in-place; we take the value
-        # and return a name-cased copy.
-        nc( ${ $_[0] } );
+	# Scalar refs are copied, not modified (documented limitation).
+	return nc( ${$first} ) if $kind eq 'SCALAR';
 
-    } elsif( scalar @_ == 1 ) {
-        # We've received a scalar: we return a name-cased copy.
-        nc( $_[0] );
-
-    } else {
-        croak "NameCase only accepts a single scalar, array or array ref";
-    }
+	_fail('single_arg') unless @_ == 1;
+	return nc($first);
 }
 
 =head2 nc
@@ -195,90 +414,287 @@ sub NameCase {
 Takes a scalar or scalarref, and change the case of the name in the
 corresponding string appropriately.
 
+=head3 PURPOSE
+
+Name-case a single string.
+
+=head3 ARGS
+
+Zero or one argument: a string or a scalar reference to a string.
+With no argument, C<$_> is used (like C<lc> and C<uc>).
+
+=head3 RETURNS
+
+The name-cased string.  An undefined, empty or "0" input is returned
+unchanged.  The input is never modified.
+
+=head3 SIDE EFFECTS
+
+None.  Reads the package variables listed under L</CONFIGURATION>.
+
+=head3 USAGE
+
+	use Lingua::EN::NameCase qw(nc);
+	print nc('MR. JON WHITACRE III');    # Mr. Jon Whitacre III
+
+=head3 EXAMPLE
+
+	nc('KEITH');              # 'Keith'
+	nc('o\'callaghan');       # "O'Callaghan"
+	nc('mccarthy');           # 'McCarthy'
+	nc(\ 'henry viii');       # 'Henry VIII'
+	nc('van der post');       # 'van der Post'
+
+	local $Lingua::EN::NameCase::ROMAN = 0;
+	nc('na li');              # 'Na Li'
+
+=head3 API SPECIFICATION
+
+=head4 input
+
+	{
+		name => {
+			type     => 'string',     # or a scalarref to a string
+			optional => 1,            # defaults to $_
+		},
+	}
+
+=head4 output
+
+	{ type => 'string', optional => 1 }    # undef in, undef out
+
+=head3 MESSAGES
+
+=over 4
+
+=item C<usage_nc>
+
+I<Usage: nc [[\]$SCALAR] (got {got})>.
+More than one argument, or a reference that is not a scalar reference,
+was supplied (C<{got}> names the type).  Pass one string or C<\$string>.
+
+=back
+
+=head3 FORMAL SPECIFICATION
+
+	┌─ nc ───────────────────────────────────────────────────
+	│ name? : STRING ∪ ↑STRING ∪ {⊥}
+	│ out!  : STRING ∪ {⊥}
+	├────────────────────────────────────────────────────────
+	│ #args > 1 ∨ ref(name?) ∉ { ∅, SCALAR } ⇒ croak usage_nc
+	│ value = (name? ∈ ↑STRING ⇒ ↑name?  ∨  name?)
+	│ value ∈ {⊥, "", "0"} ⇒ out! = value
+	│ otherwise
+	│   out! = postnominal ∘ roman ∘ particles ∘ mac ∘ base (value)
+	│   where roman and postnominal apply only when enabled
+	└────────────────────────────────────────────────────────
+
+=head3 PSEUDOCODE
+
+	validate arguments (at most one; a plain scalar or SCALAR ref)
+	take the argument, or $_ when none was given
+	dereference it if it is a reference
+	return it at once if it is false (undef, '', '0')
+	lowercase it, capitalise each word, lowercase 's
+	apply the Mc/Mac rules
+	lowercase the particles (da, de, van, von, ...)
+	if ROMAN: upper-case roman numerals
+	if POSTNOMINAL: normalise a trailing PhD, MBE, ...
+	return the result
+
 =cut
 
 sub nc {
-    croak "Usage: nc [[\\]\$SCALAR]"
-        if scalar @_ > 1 or ( ref $_[0] and ref $_[0] ne 'SCALAR' );
+	_fail( 'usage_nc', { got => ref $_[0] || 'list' } )
+		if @_ > 1 || ( ref $_[0] && ref $_[0] ne 'SCALAR' );
 
-    local( $_ ) = @_ if @_;
-    $_ = ${$_} if ref( $_ ) ;           # Replace reference with value.
+	# With no argument we work on a copy of $_, so the caller's $_ is never
+	# touched, even when it holds a reference.
+	my $name = @_ ? $_[0] : $_;
+	$name = ${$name} if ref $name;
 
-    return $_   unless($_);
+	# undef, '' and '0' have no case to fix.
+	return $name unless $name;
 
-    $_ = lc ;                           # Lowercase the lot.
-    s{ \b (\w)   }{\u$1}gx;             # Uppercase first letter of every word.
-    s{ (\'\w) \b }{\L$1}gx;             # Lowercase 's.
+	$name = _base_case($name);
+	$name = _mac_case($name);
+	$name = _particle_case($name);
+	$name = _roman_case($name)       if $ROMAN;
+	$name = _postnominal_case($name) if $POSTNOMINAL;
 
-    # Name case Mcs and Macs - taken straight from NameParse.pm incl. comments.
-    # Exclude names with 1-2 letters after prefix like Mack, Macky, Mace
-    # Exclude names ending in a,c,i,o, or j are typically Polish or Italian
-
-    if ( /\bMac[A-Za-z]{2,}[^aciozj]\b/ or /\bMc/ ) {
-        s/\b(Ma?c)([A-Za-z]+)/$1\u$2/g;
-
-        # Now correct for "Mac" exceptions
-        s/\bMacEvicius/Macevicius/g;    # Lithuanian
-        s/\bMacHado/Machado/g;          # Portuguese
-        s/\bMacHar/Machar/g;
-        s/\bMacHin/Machin/g;
-        s/\bMacHlin/Machlin/g;
-        s/\bMacIas/Macias/g;
-        s/\bMacIulis/Maciulis/g;
-        s/\bMacKie/Mackie/g;
-        s/\bMacKle/Mackle/g;
-        s/\bMacKlin/Macklin/g;
-        s/\bMacQuarie/Macquarie/g;
-        s/\bMacOmber/Macomber/g;
-        s/\bMacIn/Macin/g;
-        s/\bMacKintosh/Mackintosh/g;
-        s/\bMacKen/Macken/g;
-        s/\bMacHen/Machen/g;
-        s/\bMacisaac/MacIsaac/g;
-        s/\bMacHiel/Machiel/g;
-        s/\bMacIol/Maciol/g;
-        s/\bMacKell/Mackell/g;
-        s/\bMacKlem/Macklem/g;
-        s/\bMacKrell/Mackrell/g;
-        s/\bMacLin/Maclin/g;
-        s/\bMacKey/Mackey/g;
-        s/\bMacKley/Mackley/g;
-        s/\bMacHell/Machell/g;
-        s/\bMacHon/Machon/g;
-    }
-    s/Macmurdo/MacMurdo/g;
-
-    # Fixes for "son (daughter) of" etc. in various languages.
-    s{ \b Al(?=\s+\w)  }{al}gx;                     # al Arabic or forename Al.
-    s{ \b Ap        \b }{ap}gx;                     # ap Welsh.
-    # <http://www.jewfaq.org/jnames.htm> search for: followed by ben
-    # without first (?<=\S\s), first name of 'ben jones' remains lowercase
-    s{ (?<=\S\s)\bBen(?=\s+\w) }{ben}gx if $HEBREW; # ben Hebrew or forename Ben.
-    s{ (?<=\S\s)\bBat(?=\s+\w) }{bat}gx if $HEBREW; # bat Hebrew or forename Bat.
-    s{ \b Dell([ae])\b }{dell$1}gx;                 # della and delle Italian.
-    s{ \b D([aeiu]) \b }{d$1}gx;                    # da, de, di Italian; du French.
-    s{ \b De([lr])  \b }{de$1}gx;                   # del Italian; der Dutch/Flemish.
-    s{ \b El        \b }{el}gx  unless $SPANISH;    # el Greek or El Spanish.
-    s{ \b La        \b }{la}gx  unless $SPANISH;    # la French or La Spanish.
-    s{ \b L([eo])   \b }{l$1}gx;                    # lo Italian; le French.
-    s{ \b Van(?=\s+\w) }{van}gx;                    # van German or forename Van.
-    s{ \b Von       \b }{von}gx;                    # von Dutch/Flemish
-
-    if($ROMAN) {
-        # Fixes for roman numeral names, e.g. Henry VIII, up to 89, LXXXIX
-        s{ \b ( (?: [Xx]{1,3} | [Xx][Ll]   | [Ll][Xx]{0,3} )?
-                (?: [Ii]{1,3} | [Ii][VvXx] | [Vv][Ii]{0,3} )? ) \b }{\U$1}gx;
-    }
-
-    if($POSTNOMINAL) {
-        # post-nominal initials
-        for my $pni (@POST_NOMINAL_INITIALS) {
-            s{ \b ($pni)    $}{$pni}ix;
-        }
-    }
-
-    $_;
+	return $name;
 }
+
+#--------------------------------------------------------------------------
+# Private functions.  Sub::Private (enforce mode) makes calls from other
+# packages croak.
+
+# Purpose:      Raise a localised error.
+# Entry:        $key is a message id; $args is an optional hashref of
+#               placeholder values.
+# Exit status:  Never returns.
+# Side effects: Croaks, reporting the error at the caller of the public
+#               function (Carp skips frames inside this package).
+sub _fail :Private {
+	my ( $key, $args ) = @_;
+
+	croak _i18n( $key, $args );
+}
+
+# Purpose:      Turn a message id into text, in the user's wording if they
+#               have supplied one in %MESSAGES.
+# Entry:        $key is a message id; $args is an optional hashref.
+#               Each {name} in the template is replaced by $args->{name};
+#               an unknown {name} is left as written.
+# Exit status:  Returns the message string; an unknown key is returned as is.
+# Side effects: None.
+sub _i18n :Private {
+	my ( $key, $args ) = @_;
+
+	$args ||= {};
+	my $template = $MESSAGES{$key} // $DEFAULT_MESSAGES{$key} // $key;
+
+	$template =~ s{ \{ (\w+) \} }{ $args->{$1} // "{$1}" }gex;
+
+	return $template;
+}
+
+# Purpose:      Lowercase everything, capitalise each word, then undo the
+#               capital after an apostrophe (O'Neil stays, but Fred's -> Fred's).
+# Entry:        $name is a non-empty string.
+# Exit status:  Returns the converted string.
+# Side effects: None.
+sub _base_case :Private {
+	my ($name) = @_;
+
+	$name = lc $name;
+	$name =~ s{ \b (\w) }{\u$1}gx;
+	$name =~ s{ (\'\w) \b }{\L$1}gx;
+
+	return $name;
+}
+
+# Purpose:      Fix Mc and Mac names, e.g. McDonald, MacDonald, but Machado.
+# Entry:        $name has been through _base_case().
+# Exit status:  Returns the converted string.
+# Side effects: None.
+sub _mac_case :Private {
+	my ($name) = @_;
+
+	# Taken from NameParse.pm: only touch names that look like Mc/Mac names.
+	if ( $name =~ $MAC_NAME ) {
+		$name =~ s{ \b (Ma?c) ([A-Za-z]+) }{$1\u$2}gx;
+
+		# Undo the capital for one-word exceptions such as Machado.
+		$name =~ s{$MAC_EXCEPTION}{Mac\l$1}g;
+		$name =~ s{ \b Macisaac }{MacIsaac}gx;
+	}
+	$name =~ s{ \b Macmurdo }{MacMurdo}gx;
+
+	return $name;
+}
+
+# Purpose:      Lowercase "son of" particles: al, ap, da, de, del, van, von ...
+# Entry:        $name has been through _base_case().
+# Exit status:  Returns the converted string.
+# Side effects: None.
+sub _particle_case :Private {
+	my ($name) = @_;
+
+	# Only the first letter of a particle is ever changed, so one pass over
+	# the alternation is equivalent to applying each rule in turn.
+	$name =~ s{ \b ($ALWAYS_LOWER_PARTICLE) }{\l$1}gx;
+
+	# Hebrew ben/bat need a preceding word, or "Ben Jones" would lose its
+	# capital: <http://www.jewfaq.org/jnames.htm>
+	$name =~ s{ \b ($HEBREW_PARTICLE) }{\l$1}gx if $HEBREW;
+
+	# El and La are lowercase in Greek and French, but not in Spanish.
+	$name =~ s{ \b ($SPANISH_CLASH) }{\l$1}gx unless $SPANISH;
+
+	return $name;
+}
+
+# Purpose:      Upper-case roman numerals, e.g. Henry VIII.
+# Entry:        $name has been through _base_case().
+# Exit status:  Returns the converted string.
+# Side effects: None.
+sub _roman_case :Private {
+	my ($name) = @_;
+
+	$name =~ s{ \b ($ROMAN_NUMERAL) \b }{\U$1}gx;
+
+	return $name;
+}
+
+# Purpose:      Put a trailing post-nominal (PhD, MBE ...) into its usual case.
+# Entry:        $name has been through _base_case().
+# Exit status:  Returns the converted string.
+# Side effects: None.
+sub _postnominal_case :Private {
+	my ($name) = @_;
+
+	$name =~ s{$POST_NOMINAL_AT_END}{ $POST_NOMINAL_CANONICAL{ lc $1 } }e;
+
+	return $name;
+}
+
+=head1 LIMITATIONS
+
+The design choices below are known weaknesses.
+
+=over 4
+
+=item * Global configuration
+
+C<$HEBREW>, C<$SPANISH>, C<$ROMAN> and C<$POSTNOMINAL> are package
+variables, so one part of a program changing them changes the result for
+all of it.  Use C<local> to scope a change.  A per-call options hash would
+be better, but would change the API.
+
+=item * Scalar references are not modified in place
+
+C<NameCase(\$name)> returns a copy.  Changing this would break existing
+callers.
+
+=item * Exceptions are prefixes
+
+The "Mac" exceptions match the start of a word, so MacInnes becomes
+Macinnes and MacKenzie becomes Mackenzie.  An exact-surname list would be
+more accurate but needs data this module does not have.
+
+=item * Everything is an English-language heuristic
+
+Names are not cased by a grammar.  "Ben" and "Van" are lowercased only when
+they follow another word, and every word of a name is treated alike
+(C<Estate Of Laura Jones>).  For real name parsing use
+L<Lingua::EN::NameParse>.
+
+=item * C<use locale>
+
+The module honours the current C<LC_CTYPE> locale.  That is correct for
+legacy 8-bit data, but in a Turkish locale "I" lowercases to a dotless "i".
+Decode your data and, if that matters, run with a neutral locale.
+
+=item * Post-nominals only at the end
+
+Only the last word is checked, and the list is not exhaustive.
+Since the entries are now matched literally, "MCh." and "FCSP." require
+their final dot (the dot used to match any character).
+
+=item * Error messages
+
+Messages are English templates with C<{name}> placeholders, replaceable
+through C<%MESSAGES>.  There is no plural or gender handling because none
+of the messages needs it.
+
+=item * Encapsulation
+
+The internal routines are guarded with L<Sub::Private> in enforce mode.
+L<Sub::Protected> is not used because the module has no classes or methods
+to protect.
+
+=back
 
 =head1 BUGS
 
@@ -295,7 +711,7 @@ Use Kim Ryan's L<Lingua::EN::NameParse> for any really sophisticated name parsin
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Lingua::EN::NameCase
+	perldoc Lingua::EN::NameCase
 
 You can also look for information at:
 

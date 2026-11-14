@@ -5,6 +5,16 @@ Revision history for Lingua-EN-NameCase
 	Use gtar to create a distribution on Macs
 	Use Test::DescribeMe to simplify tests
 	Use Test::Needs
+	Refactored into small private routines (Sub::Private, enforce mode)
+	Table-driven Mac exceptions, particles and post-nominals: about 10x faster
+	Fix: post-nominal entries "MCh.", "FCSP." and "FSCR." matched any
+	  character for the dot, so "MCHX" became "MCh."
+	Fix: nc() with no argument no longer modifies a reference in $_
+	NameCase(\@array) in place now returns the array reference
+	Error messages are templates, overridable via %MESSAGES; they name the
+	  offending argument type
+	Added t/messages.t and t/locales.t; documented LIMITATIONS
+	Now requires Readonly, Sub::Private and Perl 5.8
 
 1.21	Sun Nov 15 07:38:11 EST 2020
 	Fix CPAN breakage
