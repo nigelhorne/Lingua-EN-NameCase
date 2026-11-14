@@ -11,6 +11,11 @@ Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercas
 use strict;
 use warnings;
 
+# Names are free text and may hold lone surrogates or code points beyond
+# Unicode.  Perl then warns from lc and friends; that is noise for the
+# caller, who cannot fix it, so those warnings are off inside this module.
+no warnings 'utf8';
+
 # Deliberately NOT "use locale".  It made the result depend on the process
 # locale: in the C locale (Windows code pages, bare containers) it gave
 # "Emile" with an accent as "EMile", warned about every character above 255,
@@ -147,6 +152,12 @@ Upper-case roman numerals (I to LXXXIX).
 
 Normalise a trailing post-nominal such as "PhD" or "MBE".
 
+=item C<$Lingua::EN::NameCase::MAX_LENGTH> (default C<undef>, no limit)
+
+The longest name, in characters, that C<nc> will accept.  A longer name makes
+C<nc> croak with the C<too_long> message instead of using time and memory on
+it.  Set this when names come from an untrusted source.
+
 =item C<%Lingua::EN::NameCase::MESSAGES>
 
 Overrides the text of an error message by key (see L</MESSAGES> under
@@ -166,6 +177,7 @@ our $HEBREW      = 1;
 our $SPANISH     = 0;
 our $ROMAN       = 1;
 our $POSTNOMINAL = 1;
+our $MAX_LENGTH;    # undef: no limit
 our %MESSAGES;
 
 #--------------------------------------------------------------------------
@@ -178,7 +190,11 @@ Readonly my %DEFAULT_MESSAGES => (
 	usage_nc       => 'Usage: nc [[\\]$SCALAR] (got {got})',
 	usage_namecase => 'Usage: $SCALAR|@ARRAY = NameCase [\\]$SCALAR|@ARRAY (got {got})',
 	single_arg     => 'NameCase only accepts a single scalar, array or array ref',
+	too_long       => 'Name is too long: {length} characters (the maximum is {max})',
 );
+
+# How a type name is shown in an error message: at most this many characters.
+Readonly my $MAX_TYPE_NAME_LENGTH => 64;
 
 # Reference types the functions accept.
 Readonly my %ACCEPTED_REF => ( SCALAR => 1, ARRAY => 1 );
@@ -306,6 +322,13 @@ Check important data by hand.  See L</LIMITATIONS>.
 C<nc> takes at most one argument.  C<NameCase> in scalar context takes
 exactly one.  Anything else stops the program with an error message,
 so wrap the call in C<eval> if the input is not trusted.
+
+=item * Untrusted input
+
+Set C<$Lingua::EN::NameCase::MAX_LENGTH> when names come from users.  Without
+it, a very large string is processed in full, using memory in proportion to
+its size.  A class name in an error message is shortened and any odd
+character in it becomes "?".
 
 =item * C<nc()> with no argument uses C<$_>
 
@@ -551,6 +574,7 @@ It does not change C<$_>, C<$@>, C<$!> or any C<alarm> timer.
 		name => {
 			type     => 'string',     # or a scalarref to a string
 			optional => 1,            # defaults to $_
+			max      => undef,        # $MAX_LENGTH, when set
 		},
 	}
 
@@ -567,6 +591,12 @@ It does not change C<$_>, C<$@>, C<$!> or any C<alarm> timer.
 I<Usage: nc [[\]$SCALAR] (got {got})>.
 More than one argument, or a reference that is not a scalar reference,
 was supplied (C<{got}> names the type).  Pass one string or C<\$string>.
+
+=item C<too_long>
+
+I<Name is too long: {length} characters (the maximum is {max})>.
+C<$MAX_LENGTH> is set and the name is longer.  Shorten the input, or raise
+the limit.
 
 =back
 
@@ -586,16 +616,24 @@ was supplied (C<{got}> names the type).  Pass one string or C<\$string>.
 =cut
 
 sub nc {
-	_fail( 'usage_nc', { got => ref $_[0] || 'list' } )
-		if @_ > 1 || ( ref $_[0] && ref $_[0] ne 'SCALAR' );
-
-	# With no argument we work on a copy of $_, so the caller's $_ is never
-	# touched, even when it holds a reference.
+	# Read the argument exactly once.  A tied variable could answer differently
+	# each time it is read, which would let a bad value slip past the check.
+	# With no argument we work on $_, so the caller's $_ is never modified,
+	# even when it holds a reference.
 	my $name = @_ ? $_[0] : $_;
-	$name = ${$name} if ref $name;
+	my $kind = ref $name;
+
+	_fail( 'usage_nc', { got => $kind || 'list' } )
+		if @_ > 1 || ( $kind && $kind ne 'SCALAR' );
+
+	$name = ${$name} if $kind;
 
 	# undef, '' and '0' have no case to fix.
 	return $name unless $name;
+
+	# Refuse oversize input before any copy of it is made.
+	_fail( 'too_long', { length => length $name, max => $MAX_LENGTH } )
+		if defined $MAX_LENGTH && length $name > $MAX_LENGTH;
 
 	$name = _base_case($name);
 	$name = _mac_case($name);
@@ -619,7 +657,32 @@ sub nc {
 sub _fail :Private {
 	my ( $key, $args ) = @_;
 
-	croak _i18n( $key, $args );
+	# The type name may come from an attacker (a class name can hold newlines
+	# or be megabytes long), so it is made safe before it reaches a log.
+	$args = { %{ $args || {} } };
+	$args->{got} = _safe_type( $args->{got} ) if defined $args->{got};
+
+	# An empty or missing text would make a useless error: fall back to the id.
+	my $message = _i18n( $key, $args );
+	$message = $key unless defined $message && length $message;
+	croak $message;
+
+	# Not reached: croak never returns.  This stops a guard clause from
+	# falling through into bad data if croak is ever replaced.
+	die $message;    ## no critic
+}
+
+# Purpose:      Make a reference type or class name safe to show in a message.
+# Entry:        $type is a string (possibly hostile).
+# Exit status:  Returns the string with every character other than a word
+#               character or colon replaced by "?", cut to a fixed length.
+# Side effects: None.
+sub _safe_type :Private {
+	my ($type) = @_;
+
+	$type =~ s{ [^\w:] }{?}gx;
+
+	return substr $type, 0, $MAX_TYPE_NAME_LENGTH;
 }
 
 # Purpose:      Turn a message id into text, in the user's wording if they
@@ -636,7 +699,8 @@ sub _i18n :Private {
 	# problem behind a second warning.
 	$key = 'unknown_message' unless defined $key;
 	$args ||= {};
-	my $template = $MESSAGES{$key} // $DEFAULT_MESSAGES{$key} // $key;
+	# Force a plain string: a reference here would become the exception itself.
+	my $template = '' . ( $MESSAGES{$key} // $DEFAULT_MESSAGES{$key} // $key );
 
 	$template =~ s{ \{ (\w+) \} }{ $args->{$1} // "{$1}" }gex;
 
@@ -866,6 +930,7 @@ C<ANY> is any Perl value, and C<STRING> is a Perl string.
 	│ out!  : STRING ∪ {⊥}
 	├────────────────────────────────────────────────────────
 	│ #args > 1 ∨ ref(name?) ∉ { ∅, SCALAR } ⇒ croak usage_nc
+	│ MAX_LENGTH ≠ ⊥ ∧ value ∉ {⊥, "", "0"} ∧ #value > MAX_LENGTH ⇒ croak too_long
 	│ value = (name? ∈ ↑STRING ⇒ ↑name?  ∨  name?)
 	│ value ∈ {⊥, "", "0"} ⇒ out! = value
 	│ otherwise
@@ -877,13 +942,14 @@ C<ANY> is any Perl value, and C<STRING> is a Perl string.
 
 	┌─ Config ───────────────────────────────────────────────
 	│ HEBREW, SPANISH, ROMAN, POSTNOMINAL : { 0, 1 }
+	│ MAX_LENGTH : ℕ ∪ {⊥}
 	│ MESSAGES : KEY ⇸ STRING
 	└────────────────────────────────────────────────────────
 	┌─ Init ─────────────────────────────────────────────────
 	│ Config'
 	├────────────────────────────────────────────────────────
 	│ HEBREW' = 1 ∧ SPANISH' = 0 ∧ ROMAN' = 1 ∧ POSTNOMINAL' = 1
-	│ MESSAGES' = ∅
+	│ MESSAGES' = ∅ ∧ MAX_LENGTH' = ⊥
 	└────────────────────────────────────────────────────────
 	┌─ Set ──────────────────────────────────────────────────
 	│ ΔConfig ; flag? : { HEBREW, SPANISH, ROMAN, POSTNOMINAL } ; v? : { 0, 1 }

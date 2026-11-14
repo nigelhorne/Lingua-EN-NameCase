@@ -29,6 +29,8 @@ my %ledger = map { $_ => 1 } (
 	'message:usage_nc',
 	'message:usage_namecase',
 	'message:single_arg',
+	'message:too_long',
+	'config:MAX_LENGTH',
 	# nc return states
 	'nc:string',
 	'nc:false-undef',
@@ -240,6 +242,16 @@ subtest 'NameCase: invalid element' => sub {
 	throws_ok { NameCase( \@data ) } qr/^Usage: nc \[\[\\\]\$SCALAR\] \(got HASH\) at /, 'error names the bad type';
 	is_deeply( [ map { ref $_ || $_ } @data ], [ 'ANNE JONES', 'HASH', 'BOB MCVEY' ], 'array left unchanged' );
 	throws_ok { my @r = NameCase( 'OK', [] ) } qr/^Usage: nc /, 'bad element in a list';
+};
+
+# ---------------------------------------------------------------- size limit
+# Purpose: $MAX_LENGTH is optional; when set, longer names are refused.
+subtest 'configuration: MAX_LENGTH (message too_long)' => sub {
+	is( nc( 'a' x 20 ), 'A' . ( 'a' x 19 ), 'default: no limit' );
+	local $Lingua::EN::NameCase::MAX_LENGTH = 5;
+	is( nc('abcde'), 'Abcde', 'at the limit' );
+	throws_ok { nc('abcdef') } qr/^Name is too long: 6 characters \(the maximum is 5\) at \Q$0\E line \d+\.?$/, 'over the limit: exact message';
+	covered( 'message:too_long', 'config:MAX_LENGTH' );
 };
 
 # ---------------------------------------------------------------- configuration

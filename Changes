@@ -15,6 +15,12 @@ Revision history for Lingua-EN-NameCase
 	  offending argument type
 	Fix: Windows/C-locale failures: removed "use locale", which warned about wide
 	  characters and mis-cased accented Latin-1 names outside UTF-8 locales
+	New $MAX_LENGTH switch and too_long message to refuse oversize names
+	Fix: nc() read a tied argument twice (check/use gap); now once
+	Fix: error messages no longer echo raw class names (log injection);
+	  an empty message text or a reference as text no longer breaks croak
+	Fix: no warnings for lone surrogates or non-Unicode code points
+	Added t/edge_cases.t
 	NameCase(\@array) is now all-or-nothing: a bad element leaves it unchanged
 	Added t/integration.t, t/unit.t, t/function.t, t/messages.t and t/locales.t; documented LIMITATIONS
 	Now requires Readonly, Sub::Private and Perl 5.8
