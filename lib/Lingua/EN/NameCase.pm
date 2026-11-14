@@ -385,7 +385,8 @@ A name-cased copy.  A scalar reference is I<not> modified (see L</LIMITATIONS>).
 
 =head3 SIDE EFFECTS
 
-Modifies the referenced array only in the in-place case above.
+Modifies the referenced array only in the in-place case above.  If any
+element is invalid, the function croaks and the array is left unchanged.
 Dies (via L<Carp/croak>) on bad arguments.
 
 =head3 USAGE
@@ -470,9 +471,10 @@ sub NameCase {
 	}
 
 	# An array ref in scalar/void context is converted in place, as that is
-	# the only way to be useful when no list is wanted.
+	# the only way to be useful when no list is wanted.  The whole answer is
+	# built first, so a bad element croaks before the caller's array is touched.
 	if ( $kind eq 'ARRAY' ) {
-		$_ = nc($_) for @{$first};
+		@{$first} = map { nc($_) } @{$first};
 		return $first;
 	}
 
@@ -611,6 +613,9 @@ sub _fail :Private {
 sub _i18n :Private {
 	my ( $key, $args ) = @_;
 
+	# A missing key is a programming error, but it must not hide the real
+	# problem behind a second warning.
+	$key = 'unknown_message' unless defined $key;
 	$args ||= {};
 	my $template = $MESSAGES{$key} // $DEFAULT_MESSAGES{$key} // $key;
 
