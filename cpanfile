@@ -11,8 +11,11 @@ on 'test' => sub {
 	requires 'IO::File';
 	requires 'POSIX';
 	requires 'Test::DescribeMe';
+	requires 'Test::Memory::Cycle';
+	requires 'Test::Mockingbird';
 	requires 'Test::Most';
 	requires 'Test::Needs';
+	requires 'Test::Returns';
 };
 
 on 'develop' => sub {

@@ -240,10 +240,17 @@ only) a list of scalars.
 - Scalar or scalar reference
 
     A name-cased copy.  A scalar reference is _not_ modified (see ["LIMITATIONS"](#limitations)).
+    An undefined, empty or "0" value comes back unchanged.
+
+If the first argument is an array reference, any further arguments are
+ignored.  An empty array reference gives an empty list (or an unchanged
+empty array).  In list context a single scalar or scalar reference gives a
+list of one name.
 
 #### Side Effects
 
-Modifies the referenced array only in the in-place case above.
+Modifies the referenced array only in the in-place case above.  If any
+element is invalid, the function croaks and the array is left unchanged.
 Dies (via ["croak" in Carp](https://metacpan.org/pod/Carp#croak)) on bad arguments.
 
 #### Usage
@@ -340,6 +347,7 @@ unchanged.  The input is never modified.
 #### Side Effects
 
 None.  Reads the package variables listed under ["CONFIGURATION"](#configuration).
+It does not change `$_`, `$@`, `$!` or any `alarm` timer.
 
 #### Usage
 

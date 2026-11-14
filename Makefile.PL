@@ -35,8 +35,11 @@ WriteMakefile(
 		'IO::File' => '0',
 		'POSIX' => '0',
 		'Test::DescribeMe' => 0,
+		'Test::Memory::Cycle' => 0,
+		'Test::Mockingbird' => 0,
 		'Test::Most' => 0,
 		'Test::Needs' => 0,
+		'Test::Returns' => 0,
 	}, 'LIBS'              => [''],   # e.g., '-lm'
 	'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'
 	'INC'               => '',     # e.g., '-I/usr/include/other'

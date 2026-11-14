@@ -380,8 +380,14 @@ can be chained.
 =item * Scalar or scalar reference
 
 A name-cased copy.  A scalar reference is I<not> modified (see L</LIMITATIONS>).
+An undefined, empty or "0" value comes back unchanged.
 
 =back
+
+If the first argument is an array reference, any further arguments are
+ignored.  An empty array reference gives an empty list (or an unchanged
+empty array).  In list context a single scalar or scalar reference gives a
+list of one name.
 
 =head3 SIDE EFFECTS
 
@@ -507,6 +513,7 @@ unchanged.  The input is never modified.
 =head3 SIDE EFFECTS
 
 None.  Reads the package variables listed under L</CONFIGURATION>.
+It does not change C<$_>, C<$@>, C<$!> or any C<alarm> timer.
 
 =head3 USAGE
 
