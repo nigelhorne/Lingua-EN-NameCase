@@ -444,7 +444,11 @@ subtest 'hostile %MESSAGES cannot run code' => sub {
 # must not be laundered, and must not trigger an "Insecure dependency".
 subtest 'taint mode' => sub {
 	plan skip_all => 'child perl not used here' unless $CAN_FORK;
-	my @cmd = ( $^X, '-T', "-I$LIB_DIR", '-e', q{
+	# Taint mode ignores PERL5LIB, so pass the parent's whole module path
+	# explicitly (-I is trusted); otherwise Readonly etc. are not found when
+	# they were installed under PERL5LIB, as on CI.
+	my @cmd = ( $^X, '-T', ( map { "-I$_" } @INC ), '-e', q{
+		open STDERR, '>&', \*STDOUT;
 		use Lingua::EN::NameCase qw(nc NameCase);
 		use Scalar::Util qw(tainted);
 		my $t = $ENV{HOME_TAINTED};
@@ -457,7 +461,7 @@ subtest 'taint mode' => sub {
 	open( my $ph, '-|', @cmd ) or die "run: $!";
 	my $out = do { local $/; <$ph> };
 	close $ph;
-	is( $out, "John Smith|1,1,1\n", 'works under -T and taint is carried through, not removed' );
+	is( $out, "John Smith|1,1,1\n", 'works under -T and taint is carried through, not removed' ) or diag $out;
 };
 
 # Purpose: private routines refuse outside callers, including the newest one.

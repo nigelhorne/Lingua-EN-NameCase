@@ -303,6 +303,36 @@ subtest '_postnominal_case: things that must NOT match' => sub {
 	is( $_, $SENTINEL, '$_ is not clobbered' );
 };
 
+# The post-nominal matcher works on the reversed name and needs every list
+# entry to start with a letter or digit (a word boundary in front of it).
+# Read the list from the source so a new entry cannot break that unnoticed.
+subtest '_postnominal_case: every entry in the module list works' => sub {
+	open( my $fh, '<', $INC{'Lingua/EN/NameCase.pm'} ) or die "read module: $!";
+	my $source = do { local $/; <$fh> };
+	close $fh;
+	my ($list) = $source =~ /Readonly my \@POST_NOMINAL_INITIALS => qw\((.*?)\);/s;
+	ok( defined $list, 'found the list in the source' ) or return;
+
+	my @entries = split ' ', $list;
+	my %canonical;
+	$canonical{ lc $_ } = $_ for @entries;    # later entries win, as in the module
+	cmp_ok( scalar @entries, '>', 100, 'a long list' );
+
+	my @bad_start = grep { !/^[A-Za-z0-9]/ } @entries;
+	is_deeply( \@bad_start, [], 'every entry starts with a letter or digit' );
+
+	my @wrong;
+	for my $key ( sort keys %canonical ) {
+		for my $before ( 'Jane ', 'Jane-', '(', '' ) {
+			my $got = Lingua::EN::NameCase::_postnominal_case( $before . $key );
+			push @wrong, "$before$key -> $got" unless $got eq $before . $canonical{$key};
+		}
+		my $glued = Lingua::EN::NameCase::_postnominal_case( 'xx' . $key );
+		push @wrong, "xx$key changed to $glued" if $glued ne 'xx' . $key && !exists $canonical{ lc "xx$key" };
+	}
+	is_deeply( \@wrong, [], 'each entry is found at the end, after a space, hyphen, bracket or nothing' ) or diag explain [ @wrong[ 0 .. ( $#wrong < 9 ? $#wrong : 9 ) ] ];
+};
+
 # ---------------------------------------------------------------- nc (pipeline, mocked helpers)
 subtest 'nc: calls helpers in order, honouring the switches' => sub {
 	my @order;

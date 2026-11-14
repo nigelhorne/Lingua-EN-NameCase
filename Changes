@@ -21,6 +21,8 @@ Revision history for Lingua-EN-NameCase
 	  an empty message text or a reference as text no longer breaks croak
 	Fix: no warnings for lone surrogates or non-Unicode code points
 	Added t/edge_cases.t
+	Faster: roman numerals 4x, particles 2x, whole nc() about 1.6x; post-nominal
+	  matching no longer scans every word boundary of a long name
 	NameCase(\@array) is now all-or-nothing: a bad element leaves it unchanged
 	Added t/integration.t, t/unit.t, t/function.t, t/messages.t and t/locales.t; documented LIMITATIONS
 	Now requires Readonly and Perl 5.10.  Sub::Private is optional (it needs

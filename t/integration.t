@@ -38,6 +38,10 @@ Readonly my $HANG_SECONDS  => 30;       # only to stop a hung test, not a speed 
 Readonly my $PAYLOAD       => [ 'ANNE JONES', "\x{c9}MILE ZOLA", "john \x{1F600} smith", q{O'CALLAGHAN}, 'MIRIAM BAT RIVKAH' ];
 Readonly my $PAYLOAD_FIXED => [ 'Anne Jones', "\x{c9}mile Zola", "John \x{1F600} Smith", q{O'Callaghan}, 'Miriam bat Rivkah' ];
 
+# Loaded at compile time too, so the package variables set below are known
+# to Perl and do not trigger "used only once" warnings on some Perl versions.
+use Lingua::EN::NameCase ();
+
 use_ok($MODULE) or BAIL_OUT("cannot load $MODULE");
 require_ok($MODULE);
 Lingua::EN::NameCase->import(qw( nc NameCase ));
