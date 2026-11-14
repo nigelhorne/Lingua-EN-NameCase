@@ -848,6 +848,52 @@ sub _postnominal_case {
 	return $name;
 }
 
+=head1 SECURITY
+
+The module only reads and builds strings.  It opens no files, runs no
+programs, uses no string C<eval>, and never turns its input into code or
+into part of a regular expression.  Notes for programs that use it:
+
+=over 4
+
+=item * Taint mode
+
+Taint is kept: a name that is tainted gives a tainted result.  The module
+never launders data and works under C<perl -T>.
+
+=item * Untrusted names
+
+Names from users can be very long.  Set C<$Lingua::EN::NameCase::MAX_LENGTH>.
+Case mapping can lengthen text: the result is at most three times as long as
+the input.  The length check is on the input, before the mapping.
+
+=item * Error messages
+
+The type or class name of a bad argument is cut to 64 characters and any
+character other than a letter, digit, underscore or colon is shown as "?",
+so a hostile class name cannot add lines or escape codes to a log.
+
+=item * Settings are global
+
+The switches, C<$MAX_LENGTH> and C<%MESSAGES> are package variables, so any
+code in the same program can change them.  Use C<local>.  They are not a
+security boundary.
+
+=item * Locked internals
+
+L<Sub::Private>, when installed, stops other packages calling the internal
+routines.  This is for tidiness, not security; it is switched off when the
+environment variable C<HARNESS_ACTIVE> is true, and it is absent when
+L<Sub::Private> is not installed.
+
+=item * Malformed text
+
+Invalid characters (lone surrogates, code points above U+10FFFF) are passed
+through without a warning.  Check the encoding of untrusted input before
+calling this module.
+
+=back
+
 =head1 PERFORMANCE
 
 A typical name (two to four words) takes about 10 microseconds, which is

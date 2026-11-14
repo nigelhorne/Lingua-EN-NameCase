@@ -4,8 +4,9 @@ use strict;
 use Test::DescribeMe qw(author);
 use Test::More;
 
-eval 'use Test::CPAN::Meta::JSON';
-plan skip_all => 'Test::CPAN::Meta::JSON required for testing META.json files' if $@;
+use Test::Needs 'Test::CPAN::Meta::JSON';    # block form: no string eval
+
+Test::CPAN::Meta::JSON->import();
 
 plan 'no_plan';
 
@@ -24,9 +25,13 @@ if($meta->{provides}) {
         is($meta->{provides}{$mod}{version},$version,
             "META.json entry [$mod] version matches distribution version");
 
-        eval "require $mod";
-        my $VERSION = '$' . $mod . '::VERSION';
-        my $v = eval "$VERSION";
+        # Load the module named in META and read its version without evaluating
+        # a string built from META.  A name that is not a plain package name
+        # (for example "Foo; system(...)") is refused.
+        ok( $mod =~ m{\A[A-Za-z_]\w*(?:::\w+)*\z}, "META entry [$mod] is a plain package name" ) or next;
+        ( my $file = "$mod.pm" ) =~ s{::}{/}g;
+        eval { require $file; 1 };
+        my $v = $mod->VERSION;
         is($meta->{provides}{$mod}{version},$v,
             "META.json entry [$mod] version matches module version");
 

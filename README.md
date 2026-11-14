@@ -117,6 +117,12 @@ so they may be changed at any time:
 
     Normalise a trailing post-nominal such as "PhD" or "MBE".
 
+- `$Lingua::EN::NameCase::MAX_LENGTH` (default `undef`, no limit)
+
+    The longest name, in characters, that `nc` will accept.  A longer name makes
+    `nc` croak with the `too_long` message instead of using time and memory on
+    it.  Set this when names come from an untrusted source.
+
 - `%Lingua::EN::NameCase::MESSAGES`
 
     Overrides the text of an error message by key (see ["MESSAGES"](#messages) under
@@ -164,6 +170,13 @@ so they may be changed at any time:
     exactly one.  Anything else stops the program with an error message,
     so wrap the call in `eval` if the input is not trusted.
 
+- Untrusted input
+
+    Set `$Lingua::EN::NameCase::MAX_LENGTH` when names come from users.  Without
+    it, a very large string is processed in full, using memory in proportion to
+    its size.  A class name in an error message is shortened and any odd
+    character in it becomes "?".
+
 - `nc()` with no argument uses `$_`
 
     This is the same as the built-in `lc`.  It can surprise you inside a loop.
@@ -208,7 +221,8 @@ through an encoded handle, for example `binmode(STDOUT, ':encoding(UTF-8)')`.
     The built-in messages are plain ASCII English.  Text you put in
     `%MESSAGES` may be any characters; use character strings.
 
-The module uses `use locale`.  See ["LIMITATIONS"](#limitations).
+The module ignores the process locale (`LC_ALL`, `LC_CTYPE`): the result
+is the same everywhere.
 
 ## Functions
 
@@ -378,6 +392,7 @@ It does not change `$_`, `$@`, `$!` or any `alarm` timer.
             name => {
                     type     => 'string',     # or a scalarref to a string
                     optional => 1,            # defaults to $_
+                    max      => undef,        # $MAX_LENGTH, when set
             },
     }
 ```
@@ -396,6 +411,12 @@ It does not change `$_`, `$@`, `$!` or any `alarm` timer.
     More than one argument, or a reference that is not a scalar reference,
     was supplied (`{got}` names the type).  Pass one string or `\$string`.
 
+- `too_long`
+
+    _Name is too long: {length} characters (the maximum is {max})_.
+    `$MAX_LENGTH` is set and the name is longer.  Shorten the input, or raise
+    the limit.
+
 #### Pseudocode
 
 ```perl
@@ -410,6 +431,66 @@ It does not change `$_`, `$@`, `$!` or any `alarm` timer.
     if POSTNOMINAL: normalise a trailing PhD, MBE, ...
     return the result
 ```
+
+## Security
+
+The module only reads and builds strings.  It opens no files, runs no
+programs, uses no string `eval`, and never turns its input into code or
+into part of a regular expression.  Notes for programs that use it:
+
+- Taint mode
+
+    Taint is kept: a name that is tainted gives a tainted result.  The module
+    never launders data and works under `perl -T`.
+
+- Untrusted names
+
+    Names from users can be very long.  Set `$Lingua::EN::NameCase::MAX_LENGTH`.
+    Case mapping can lengthen text: the result is at most three times as long as
+    the input.  The length check is on the input, before the mapping.
+
+- Error messages
+
+    The type or class name of a bad argument is cut to 64 characters and any
+    character other than a letter, digit, underscore or colon is shown as "?",
+    so a hostile class name cannot add lines or escape codes to a log.
+
+- Settings are global
+
+    The switches, `$MAX_LENGTH` and `%MESSAGES` are package variables, so any
+    code in the same program can change them.  Use `local`.  They are not a
+    security boundary.
+
+- Locked internals
+
+    [Sub::Private](https://metacpan.org/pod/Sub%3A%3APrivate), when installed, stops other packages calling the internal
+    routines.  This is for tidiness, not security; it is switched off when the
+    environment variable `HARNESS_ACTIVE` is true, and it is absent when
+    [Sub::Private](https://metacpan.org/pod/Sub%3A%3APrivate) is not installed.
+
+- Malformed text
+
+    Invalid characters (lone surrogates, code points above U+10FFFF) are passed
+    through without a warning.  Check the encoding of untrusted input before
+    calling this module.
+
+## Performance
+
+A typical name (two to four words) takes about 10 microseconds, which is
+about 100,000 names a second, measured on an ordinary desktop with Perl 5.40.
+The time grows in step with the length of the name.  Each step is a small
+number of regular expression passes over the name, and
+the cost of each pass was measured and tuned:
+
+- The roman numeral and particle rules each make one pass.
+- A trailing post-nominal is found by matching the reversed name at its
+start, so a very long name costs no more for this step than a short one.
+- Patterns are compiled once, when the module loads.
+- If [Sub::Private](https://metacpan.org/pod/Sub%3A%3APrivate) is installed each internal call is about 0.4
+microseconds slower; this is the price of locking the internals.
+
+Set `$Lingua::EN::NameCase::MAX_LENGTH` to bound the time spent on any one
+name.
 
 ## Limitations
 
@@ -440,11 +521,23 @@ The design choices below are known weaknesses.
     (`Estate Of Laura Jones`).  For real name parsing use
     [Lingua::EN::NameParse](https://metacpan.org/pod/Lingua%3A%3AEN%3A%3ANameParse).
 
-- `use locale`
+- Locale is ignored
 
-    The module honours the current `LC_CTYPE` locale.  That is correct for
-    legacy 8-bit data, but in a Turkish locale "I" lowercases to a dotless "i".
-    Decode your data and, if that matters, run with a neutral locale.
+    Case rules are the Unicode rules, whatever the locale.  Older versions used
+    `use locale`, which gave different answers on different machines.  Data in
+    a legacy 8-bit code page must be decoded first (see ["ENCODING"](#encoding)).  Language
+    rules are not applied, so Turkish "I" becomes "i", not a dotless "i".
+
+- The Mac test covers the whole string
+
+    Whether the "Mac" rules apply is decided once for the whole string, not word
+    by word.  A string that holds both a name such as "Mcdonald" and a name such
+    as "Macchiato" will have both treated as Mac names.  Pass one name at a time.
+
+- Hebrew particles need one space
+
+    "ben" and "bat" are recognised only when exactly one white space character
+    separates them from the word in front.
 
 - Post-nominals only at the end
 
@@ -460,9 +553,11 @@ The design choices below are known weaknesses.
 
 - Encapsulation
 
-    The internal routines are guarded with [Sub::Private](https://metacpan.org/pod/Sub%3A%3APrivate) in enforce mode.
-    [Sub::Protected](https://metacpan.org/pod/Sub%3A%3AProtected) is not used because the module has no classes or methods
-    to protect.
+    The internal routines are guarded with [Sub::Private](https://metacpan.org/pod/Sub%3A%3APrivate) in enforce mode, but
+    only if that module is installed.  It is optional because it needs Perl 5.14
+    or later and heavy dependencies; without it the internals are ordinary
+    subroutines whose names start with an underscore.  [Sub::Protected](https://metacpan.org/pod/Sub%3A%3AProtected) is not
+    used because the module has no classes or methods to protect.
 
 ## Bugs
 
@@ -552,6 +647,7 @@ A prime (') marks a value after the call.  `ARGS` is the list of arguments,
     │ out!  : STRING ∪ {⊥}
     ├────────────────────────────────────────────────────────
     │ #args > 1 ∨ ref(name?) ∉ { ∅, SCALAR } ⇒ croak usage_nc
+    │ MAX_LENGTH ≠ ⊥ ∧ value ∉ {⊥, "", "0"} ∧ #value > MAX_LENGTH ⇒ croak too_long
     │ value = (name? ∈ ↑STRING ⇒ ↑name?  ∨  name?)
     │ value ∈ {⊥, "", "0"} ⇒ out! = value
     │ otherwise
@@ -565,13 +661,14 @@ A prime (') marks a value after the call.  `ARGS` is the list of arguments,
 ```
     ┌─ Config ───────────────────────────────────────────────
     │ HEBREW, SPANISH, ROMAN, POSTNOMINAL : { 0, 1 }
+    │ MAX_LENGTH : ℕ ∪ {⊥}
     │ MESSAGES : KEY ⇸ STRING
     └────────────────────────────────────────────────────────
     ┌─ Init ─────────────────────────────────────────────────
     │ Config'
     ├────────────────────────────────────────────────────────
     │ HEBREW' = 1 ∧ SPANISH' = 0 ∧ ROMAN' = 1 ∧ POSTNOMINAL' = 1
-    │ MESSAGES' = ∅
+    │ MESSAGES' = ∅ ∧ MAX_LENGTH' = ⊥
     └────────────────────────────────────────────────────────
     ┌─ Set ──────────────────────────────────────────────────
     │ ΔConfig ; flag? : { HEBREW, SPANISH, ROMAN, POSTNOMINAL } ; v? : { 0, 1 }

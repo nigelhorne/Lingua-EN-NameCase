@@ -456,17 +456,42 @@ subtest 'taint mode' => sub {
 		open STDERR, '>&', \*STDOUT;
 		use Lingua::EN::NameCase qw(nc NameCase);
 		use Scalar::Util qw(tainted);
-		my $t = $ENV{HOME_TAINTED};
-		my $r = nc($t);
-		my @l = NameCase($t, $t);
-		my $ok = join ',', ( tainted($t) ? 1 : 0 ), ( tainted($r) ? 1 : 0 ), ( tainted($l[0]) ? 1 : 0 );
-		print "$r|$ok\n";
+		my $taint = substr( $ENV{HOME_TAINTED}, 0, 0 );    # an empty, tainted string
+		my @report;
+		# One name for each rule: plain, Mac, particle, Hebrew, roman, post-nominal, apostrophe.
+		for my $name ( 'JOHN SMITH', 'MACDONALD', 'VAN DER POST', 'MIRIAM BAT RIVKAH', 'HENRY VIII', 'JANE PHD', "O'NEIL" ) {
+			my $in = $name . $taint;
+			my $out = nc($in);
+			push @report, ( tainted($in) ? 1 : 0 ) . ( tainted($out) ? 1 : 0 );
+		}
+		my @list = NameCase( 'A B' . $taint, 'JANE PHD' . $taint );
+		my $array = [ 'JANE PHD' . $taint ];
+		NameCase($array);
+		push @report, join '', map { tainted($_) ? 1 : 0 } @list, @{$array};
+		print join( ',', @report ), "\n";
 	} );
-	local $ENV{HOME_TAINTED} = 'JOHN SMITH';
+	local $ENV{HOME_TAINTED} = 'x';
 	open( my $ph, '-|', @cmd ) or die "run: $!";
 	my $out = do { local $/; <$ph> };
 	close $ph;
-	is( $out, "John Smith|1,1,1\n", 'works under -T and taint is carried through, not removed' ) or diag $out;
+	is( $out, "11,11,11,11,11,11,11,111\n", 'works under -T; every rule keeps the taint, none removes it' ) or diag $out;
+};
+
+# Purpose: case mapping can make text longer (one Greek letter becomes three
+# characters).  The growth must stay bounded, so $MAX_LENGTH really bounds the
+# size of the result too, to a known multiple.
+subtest 'output length is at most three times the input' => sub {
+	Readonly my $GROWTH_LIMIT => 3;
+	my $worst = 0;
+	no warnings;
+	for my $code_point ( 0x20 .. 0x2FFFF ) {
+		next if $code_point >= 0xD800 && $code_point <= 0xDFFF;
+		my $text = chr $code_point;
+		my $ratio = length( nc($text) ) / length $text;
+		$worst = $ratio if $ratio > $worst;
+	}
+	cmp_ok( $worst, '<=', $GROWTH_LIMIT, "worst single-character growth is $worst" );
+	cmp_ok( length nc( "\x{390}" x 1000 ), '<=', $GROWTH_LIMIT * 1000, 'and in a long run' );
 };
 
 # Purpose: private routines refuse outside callers, including the newest one.

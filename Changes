@@ -21,6 +21,8 @@ Revision history for Lingua-EN-NameCase
 	  an empty message text or a reference as text no longer breaks croak
 	Fix: no warnings for lone surrogates or non-Unicode code points
 	Added t/edge_cases.t
+	Security audit: new SECURITY section; author tests no longer build code
+	  with string eval from META data; taint and growth tests
 	Fix: the Mac test let a following space or punctuation stand in for the last
 	  letter, so Polish/Italian names such as Macchiato were cased as Mac names
 	  when another word followed them
