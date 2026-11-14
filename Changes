@@ -13,6 +13,8 @@ Revision history for Lingua-EN-NameCase
 	NameCase(\@array) in place now returns the array reference
 	Error messages are templates, overridable via %MESSAGES; they name the
 	  offending argument type
+	Fix: Windows/C-locale failures: removed "use locale", which warned about wide
+	  characters and mis-cased accented Latin-1 names outside UTF-8 locales
 	NameCase(\@array) is now all-or-nothing: a bad element leaves it unchanged
 	Added t/integration.t, t/unit.t, t/function.t, t/messages.t and t/locales.t; documented LIMITATIONS
 	Now requires Readonly, Sub::Private and Perl 5.8

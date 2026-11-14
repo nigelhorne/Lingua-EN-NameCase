@@ -10,7 +10,18 @@ Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercas
 
 use strict;
 use warnings;
-use locale;
+
+# Deliberately NOT "use locale".  It made the result depend on the process
+# locale: in the C locale (Windows code pages, bare containers) it gave
+# "Emile" with an accent as "EMile", warned about every character above 255,
+# and mis-cased "I" in Turkish.  Unicode rules are the same everywhere.
+BEGIN {
+	# Make native 8-bit strings follow Unicode rules too (Perl 5.12 and later).
+	if ( $] >= 5.012 ) {
+		require feature;
+		feature->import('unicode_strings');
+	}
+}
 use autodie qw(:all);
 
 use Carp qw(croak);
@@ -346,7 +357,8 @@ C<%MESSAGES> may be any characters; use character strings.
 
 =back
 
-The module uses C<use locale>.  See L</LIMITATIONS>.
+The module ignores the process locale (C<LC_ALL>, C<LC_CTYPE>): the result
+is the same everywhere.
 
 =head1 FUNCTIONS
 
@@ -742,11 +754,12 @@ they follow another word, and every word of a name is treated alike
 (C<Estate Of Laura Jones>).  For real name parsing use
 L<Lingua::EN::NameParse>.
 
-=item * C<use locale>
+=item * Locale is ignored
 
-The module honours the current C<LC_CTYPE> locale.  That is correct for
-legacy 8-bit data, but in a Turkish locale "I" lowercases to a dotless "i".
-Decode your data and, if that matters, run with a neutral locale.
+Case rules are the Unicode rules, whatever the locale.  Older versions used
+C<use locale>, which gave different answers on different machines.  Data in
+a legacy 8-bit code page must be decoded first (see L</ENCODING>).  Language
+rules are not applied, so Turkish "I" becomes "i", not a dotless "i".
 
 =item * Post-nominals only at the end
 

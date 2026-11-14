@@ -294,7 +294,9 @@ subtest 'global state is preserved' => sub {
 	local $_ = $SENTINEL;
 	local $@ = $SENTINEL;
 	local $! = $ERRNO_VALUE;
-	alarm $ALARM_SECONDS;
+	# Windows has no real alarm() timer to inspect.
+	my $has_alarm = $^O ne 'MSWin32';
+	alarm $ALARM_SECONDS if $has_alarm;
 
 	nc('JOHN SMITH');
 	my @pair = NameCase( 'A B', 'C D' );
@@ -316,9 +318,11 @@ subtest 'global state is preserved' => sub {
 	is( $_, $SENTINEL, '$_ after errors' );
 	is( $! + 0, $ERRNO_VALUE, '$! after errors' );
 
-	my $remaining = alarm 0;
-	ok( $remaining > 0 && $remaining <= $ALARM_SECONDS, "alarm still running ($remaining s left)" );
-	dbg("alarm remaining: $remaining");
+	if ($has_alarm) {
+		my $remaining = alarm 0;
+		ok( $remaining > 0 && $remaining <= $ALARM_SECONDS, "alarm still running ($remaining s left)" );
+		dbg("alarm remaining: $remaining");
+	}
 };
 
 # ---------------------------------------------------------------- ledger

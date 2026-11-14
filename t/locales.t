@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
-# The module has "use locale", so the process locale can change its result.
+# The module ignores the process locale, so no locale may change its result.
+# (It once used "use locale", which made accented names depend on LC_ALL.)
 # It does not produce operating-system error strings, and it has no
 # country-based behaviour (no GeoIP), so only the POSIX side applies here:
 #   * ASCII names must case identically in every locale;
@@ -18,7 +19,9 @@ use Test::Most;
 use Lingua::EN::NameCase qw( NameCase nc );
 
 # The three required families: English, German and an East Asian language.
-my @LOCALES = qw( en_US.UTF-8 de_DE.UTF-8 ja_JP.UTF-8 );
+# C is first: it is on every system and is not UTF-8, which is where wide
+# characters used to cause "Wide character" warnings.
+my @LOCALES = qw( C en_US.UTF-8 de_DE.UTF-8 ja_JP.UTF-8 );
 
 my %EXPECT = (
 	'KEITH'              => 'Keith',
@@ -47,6 +50,17 @@ for my $wanted (@LOCALES) {
 			is( nc($in), $out, "nc($in)" );
 		}
 		is_deeply( [ NameCase( 'ANNE JONES', 'BOB MCVEY' ) ], [ 'Anne Jones', 'Bob McVey' ], 'NameCase list' );
+
+		# Wide characters are valid input in every locale and must not warn.
+		my @warnings;
+		{
+			local $SIG{__WARN__} = sub { push @warnings, @_ };
+			is( nc("\x{c9}MILE ZOLA"), "\x{c9}mile Zola", 'accented Latin-1 name' );
+			is( nc("\x{3b1}\x{3b2} SMITH PHD"), "\x{391}\x{3b2} Smith PhD", 'Greek name' );
+			is( nc("john \x{1F600} smith"), "John \x{1F600} Smith", 'emoji' );
+			is( nc("\x{4e2d}\x{6587}"), "\x{4e2d}\x{6587}", 'CJK unchanged' );
+		}
+		is_deeply( \@warnings, [], 'no warnings for wide characters' );
 
 		# Our own messages are catalogue text, not OS text, in every locale.
 		throws_ok { nc( {} ) } qr/^Usage: nc .*\(got HASH\)/, 'error message is locale independent';
