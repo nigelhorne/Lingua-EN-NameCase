@@ -39,6 +39,12 @@ WriteMakefile(
 		'Test::Mockingbird' => 0,
 		'Test::Most' => 0,
 		'Test::Needs' => 0,
+		'File::Temp' => 0,
+		'JSON::PP' => 0,
+		'Test::Memory::Cycle' => 0,
+		'Test::Mockingbird' => 0,
+		'Test::Returns' => 0,
+		'Test::Without::Module' => 0,
 		'Test::Returns' => 0,
 	}, 'LIBS'              => [''],   # e.g., '-lm'
 	'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'

@@ -14,7 +14,7 @@ Revision history for Lingua-EN-NameCase
 	Error messages are templates, overridable via %MESSAGES; they name the
 	  offending argument type
 	NameCase(\@array) is now all-or-nothing: a bad element leaves it unchanged
-	Added t/unit.t, t/function.t, t/messages.t and t/locales.t; documented LIMITATIONS
+	Added t/integration.t, t/unit.t, t/function.t, t/messages.t and t/locales.t; documented LIMITATIONS
 	Now requires Readonly, Sub::Private and Perl 5.8
 
 1.21	Sun Nov 15 07:38:11 EST 2020

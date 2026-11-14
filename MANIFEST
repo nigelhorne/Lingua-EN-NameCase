@@ -12,6 +12,7 @@ t/10namecase.t
 t/11examples.t
 t/12badcalls.t
 t/function.t
+t/integration.t
 t/locales.t
 t/messages.t
 t/unit.t

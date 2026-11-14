@@ -15,6 +15,12 @@ on 'test' => sub {
 	requires 'Test::Mockingbird';
 	requires 'Test::Most';
 	requires 'Test::Needs';
+	requires 'File::Temp';
+	requires 'JSON::PP';
+	requires 'Test::Memory::Cycle';
+	requires 'Test::Mockingbird';
+	requires 'Test::Returns';
+	requires 'Test::Without::Module';
 	requires 'Test::Returns';
 };
 
