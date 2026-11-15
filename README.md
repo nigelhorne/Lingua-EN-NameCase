@@ -669,7 +669,7 @@ You can also look for information at:
 1998-2014    Mark Summerfield <summer@qtrac.eu>
 2014-present Barbie <barbie@cpan.org>
 
-2020- Maintained by Nigel Horne, C<< <njh at bandsman.co.uk> >>
+2020- Maintained by Nigel Horne, C<< <njh at nigelhorne.com> >>
 ```
 
 ## Acknowledgements

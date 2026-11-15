@@ -1121,7 +1121,7 @@ L<http://deps.cpantesters.org/?module=Lingua::EN::NameCase>
   1998-2014    Mark Summerfield <summer@qtrac.eu>
   2014-present Barbie <barbie@cpan.org>
 
-  2020- Maintained by Nigel Horne, C<< <njh at bandsman.co.uk> >>
+  2020- Maintained by Nigel Horne, C<< <njh at nigelhorne.com> >>
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -1245,7 +1245,6 @@ One call to C<nc> or C<NameCase>:
 	  on caller data), and returns the array ref.
 
 =head1 LICENSE AND COPYRIGHT
-
 
 Copyright (c) Mark Summerfield 1998-2014. All Rights Reserved.
 Copyright (c) Barbie 2014-2015. All Rights Reserved.
