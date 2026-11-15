@@ -1,0 +1,503 @@
+{
+   "runs" : [
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751124.56458,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751106.6238,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751106.71762,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751106.71746,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751106.90344,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/00use.t",
+         "start" : 1794751106.90245,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.09333,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/10namecase.t",
+         "start" : 1794751107.08589,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.28042,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/11examples.t",
+         "start" : 1794751107.27751,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.46217,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/12badcalls.t",
+         "start" : 1794751107.46027,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.63177,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/90podtest.t",
+         "start" : 1794751107.63151,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.77643,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/91podcover.t",
+         "start" : 1794751107.77618,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751107.92511,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/94metatest.t",
+         "start" : 1794751107.92485,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751108.08888,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/95changedate.t",
+         "start" : 1794751108.08819,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751108.25863,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/96metatest.t",
+         "start" : 1794751108.25838,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751108.46256,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/all-fuzz.t",
+         "start" : 1794751108.46225,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751109.08966,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/data-flow.t",
+         "start" : 1794751108.67036,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751109.39683,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/domain.t",
+         "start" : 1794751109.3324,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751117.61468,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/edge_cases.t",
+         "start" : 1794751109.71375,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751117.88566,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/eof.t",
+         "start" : 1794751117.88539,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751118.04135,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/eol.t",
+         "start" : 1794751118.0411,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751120.10044,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/function.t",
+         "start" : 1794751118.23579,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751120.42369,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/fuzz.t",
+         "start" : 1794751120.4234,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751120.64853,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/integration.t",
+         "start" : 1794751120.63286,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.93847,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/integration.t",
+         "start" : 1794751120.63286,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.19918,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.18751,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.32631,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.31095,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.46985,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.45407,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.61566,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.59996,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : null,
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.75346,
+         "name" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.73801,
+         "version" : "unknown"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751121.89396,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "-e",
+         "start" : 1794751121.87807,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751122.14837,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/links.t",
+         "start" : 1794751122.14811,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751122.33483,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/locales.t",
+         "start" : 1794751122.32091,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751122.5528,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/messages.t",
+         "start" : 1794751122.53713,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751122.7399,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/no404s.t",
+         "start" : 1794751122.73964,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751122.96058,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/path.t",
+         "start" : 1794751122.93136,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751123.16023,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/pod-cm.t",
+         "start" : 1794751123.15999,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751123.30696,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/pod-synopsis.t",
+         "start" : 1794751123.3067,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751123.45894,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/pod.t",
+         "start" : 1794751123.45868,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751123.71939,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/transaction.t",
+         "start" : 1794751123.64998,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751124.03297,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/transition.t",
+         "start" : 1794751123.98134,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751124.32821,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/unit.t",
+         "start" : 1794751124.29742,
+         "version" : "1.21"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Correctly case a person's name from UPERCASE or lowcase",
+         "dir" : "/home/runner/work/Lingua-EN-NameCase/Lingua-EN-NameCase",
+         "finish" : 1794751124.5368,
+         "name" : "Lingua-EN-NameCase",
+         "perl" : "5.40.5",
+         "run" : "t/vars.t",
+         "start" : 1794751124.53651,
+         "version" : "1.21"
+      }
+   ],
+   "summary" : {
+      "Total" : {
+         "branch" : {
+            "covered" : 47,
+            "error" : 1,
+            "percentage" : 97.9166666666667,
+            "total" : 48,
+            "uncoverable" : 0
+         },
+         "condition" : {
+            "covered" : 32,
+            "error" : 2,
+            "percentage" : 94.1176470588235,
+            "total" : 34,
+            "uncoverable" : 0
+         },
+         "statement" : {
+            "covered" : 108,
+            "error" : 2,
+            "percentage" : 98.1818181818182,
+            "total" : 110
+         },
+         "subroutine" : {
+            "covered" : 20,
+            "percentage" : 100,
+            "total" : 20
+         },
+         "total" : {
+            "covered" : 207,
+            "error" : 5,
+            "percentage" : 97.6415094339623,
+            "total" : 212,
+            "uncoverable" : 0
+         }
+      },
+      "blib/lib/Lingua/EN/NameCase.pm" : {
+         "branch" : {
+            "covered" : 47,
+            "error" : 1,
+            "percentage" : 97.9166666666667,
+            "total" : 48,
+            "uncoverable" : 0
+         },
+         "condition" : {
+            "covered" : 32,
+            "error" : 2,
+            "percentage" : 94.1176470588235,
+            "total" : 34,
+            "uncoverable" : 0
+         },
+         "statement" : {
+            "covered" : 108,
+            "error" : 2,
+            "percentage" : 98.1818181818182,
+            "total" : 110
+         },
+         "subroutine" : {
+            "covered" : 20,
+            "percentage" : 100,
+            "total" : 20
+         },
+         "total" : {
+            "covered" : 207,
+            "error" : 5,
+            "percentage" : 97.6415094339623,
+            "total" : 212,
+            "uncoverable" : 0
+         }
+      }
+   }
+}
