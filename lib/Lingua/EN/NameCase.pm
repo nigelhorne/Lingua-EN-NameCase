@@ -1,13 +1,34 @@
 package Lingua::EN::NameCase;
 
+use strict;
+use warnings;
+
+# TODO: _fail: remove the unreachable die (and its path-analysis TODO), or turn that TODO into a plain comment
+# TODO: POD LIMITATIONS/Encapsulation says Sub::Private needs Perl 5.14; it is 5.26+ (match CLAUDE.md and cpanfile)
+# TODO: Mutants NUM_BOUNDARY_23_10 (>=, >, <, <= on the `$] >= 5.012` test) survive: mark as equivalent or add a unicode_strings test for native 8-bit strings
+# TODO: Devel::Cover reports 1 branch, 2 condition and 2 statement errors: re-run after removing the unreachable die and document or cover the rest
+# TODO: Decide whether these are bugs or documented traits, then add tests and COMMON PITFALLS text: nc('MARY LI') -> 'Mary LI', nc('LIV TYLER') -> 'LIV Tyler', nc('MACINTYRE') -> 'Macintyre', nc('MACKENZIE') -> 'Mackenzie', nc('McDonald MacChiato') -> both treated as Mac names
+# TODO: API SPECIFICATION (NameCase and nc): add one line on decoded characters versus undecoded bytes
+# TODO: Check that t/fuzz.t and t/all-fuzz.t skip cleanly when App::Test::Generator or fuzz-harness-generator is missing
+#
+# Post-release roadmap:
+# TODO: Replace the Mac prefix match with an exact-surname table (MacIntyre, MacKenzie, MacInnes right; Machado stays lowercase)
+# TODO: Per-call options: nc($name, \%opts) or an object (->new(spanish => 1)) instead of global package variables; keep the globals as defaults
+# TODO: Decide Mac/Mc per word instead of for the whole string
+# TODO: More particles and affixes: ten, ter, te, van de; y, dos, das, do; Fitz, Ni, Ui, Mac an; Scandinavian forms
+# TODO: Roman numerals: convert only when last or after a forename, so Li and Liv are safe by default
+# TODO: User-supplied exceptions hash (%EXCEPTIONS: DeShawn, LaToya, McKay) that overrides the rules
+# TODO: Streaming and bulk API (nc_file or an iterator); consider speed work only if batches justify it
+# TODO: Opt-in Turkish dotted/dotless I; Dutch ij; check hyphenated and apostrophe forms such as D'Angelo and O'Neill-Jones
+# TODO: Integrations: DBIx::Class or Mojolicious filter/helper; a command-line nc script reading standard input
+# TODO: Property-based tests: idempotence nc(nc(x)) eq nc(x), output at most 3x input length, only the case of letters changes
+# TODO: Housekeeping: prune dated coverage_history snapshots
+
 =head1 NAME
 
 Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercase
 
 =cut
-
-use strict;
-use warnings;
 
 # Names are free text and may hold lone surrogates or code points beyond
 # Unicode.  Perl then warns from lc and friends; that is noise for the
