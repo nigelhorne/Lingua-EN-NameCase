@@ -249,7 +249,9 @@ only) a list of scalars.
 - Scalar or void context with an array reference
 
     The array is modified in place; the array reference is returned so calls
-    can be chained.
+    can be chained.  The new names are stored into the existing elements, so a
+    reference to an element, or an array that aliases other variables (such as
+    `\@_`), sees the change.
 
 - Scalar or scalar reference
 

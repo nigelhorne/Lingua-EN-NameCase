@@ -22,6 +22,7 @@ t/91podcover.t
 t/94metatest.t
 t/95changedate.t
 t/96metatest.t
+t/data-flow.t
 t/edge_cases.t
 t/eof.t
 t/eol.t

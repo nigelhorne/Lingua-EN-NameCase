@@ -20,7 +20,11 @@ Revision history for Lingua-EN-NameCase
 	Fix: error messages no longer echo raw class names (log injection);
 	  an empty message text or a reference as text no longer breaks croak
 	Fix: no warnings for lone surrogates or non-Unicode code points
-	Added t/edge_cases.t
+	Added t/edge_cases.t and t/data-flow.t
+	Fix: a post-nominal found only through case folding (long s, "fi" ligature)
+	  had its text deleted, with an uninitialized-value warning
+	Fix: NameCase(\@array) no longer breaks aliases: the elements are written in
+	  place again (NameCase(\@_) changes the caller's variables), still all-or-nothing
 	Security audit: new SECURITY section; author tests no longer build code
 	  with string eval from META data; taint and growth tests
 	Fix: the Mac test let a following space or punctuation stand in for the last

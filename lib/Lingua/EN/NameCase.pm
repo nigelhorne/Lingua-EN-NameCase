@@ -465,7 +465,9 @@ A list of name-cased copies.  The source is not modified.
 =item * Scalar or void context with an array reference
 
 The array is modified in place; the array reference is returned so calls
-can be chained.
+can be chained.  The new names are stored into the existing elements, so a
+reference to an element, or an array that aliases other variables (such as
+C<\@_>), sees the change.
 
 =item * Scalar or scalar reference
 
@@ -569,8 +571,12 @@ sub NameCase {
 	# An array ref in scalar/void context is converted in place, as that is
 	# the only way to be useful when no list is wanted.  The whole answer is
 	# built first, so a bad element croaks before the caller's array is touched.
+	# It is then stored into the existing elements (a slice), not by replacing
+	# the array contents, so a caller's references to elements, and an array
+	# that aliases other variables (such as \@_), see the change.
 	if ( $kind eq 'ARRAY' ) {
-		@{$first} = map { nc($_) } @{$first};
+		my @fixed = map { nc($_) } @{$first};
+		@{$first}[ 0 .. $#fixed ] = @fixed;
 		return $first;
 	}
 
@@ -842,7 +848,12 @@ sub _postnominal_case {
 		# Offsets are in the reversed tail, which ends where the name ends.
 		my ( $start, $end ) = ( $-[1], $+[1] );
 		my $entry = lc scalar reverse substr( $reversed, $start, $end - $start );
-		substr( $name, $length - $end, $end - $start ) = $POST_NOMINAL_CANONICAL{$entry};
+
+		# A text can match only through case folding (the long s U+017F matches
+		# "s", the "fi" ligature matches "fi") and then has no exact key.  It is
+		# left as it is: writing the missing value would delete the text.
+		my $canonical = $POST_NOMINAL_CANONICAL{$entry};
+		substr( $name, $length - $end, $end - $start ) = $canonical if defined $canonical;
 	}
 
 	return $name;
