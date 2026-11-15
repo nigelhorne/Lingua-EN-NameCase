@@ -83,3 +83,10 @@ CLAUDE.md
 # Super-linter tuning files - not for distribution
 ^\.prettierignore$
 ^\.textlintrc$
+
+# Development artefacts
+^coverage_history/
+^mutation\.json$
+^xt/
+^\.travis\.yml$
+^\.appveyor\.yml$

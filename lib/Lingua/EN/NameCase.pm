@@ -53,11 +53,11 @@ our @EXPORT_OK = qw( NameCase nc );
 
 =head1 VERSION
 
-Version 1.21
+Version 1.22
 
 =cut
 
-our $VERSION = '1.21';
+our $VERSION = '1.22';
 
 =head1 SYNOPSIS
 
@@ -1248,9 +1248,10 @@ One call to C<nc> or C<NameCase>:
 
 Copyright (c) Mark Summerfield 1998-2014. All Rights Reserved.
 Copyright (c) Barbie 2014-2015. All Rights Reserved.
+Copyright (c) Nigel Horne 2020-2026. All Rights Reserved.
 
 This distribution is free software; you can redistribute it and/or
-modify it under the Artistic Licence v2.
+modify it under the Artistic License 2.0.
 
 =cut
 

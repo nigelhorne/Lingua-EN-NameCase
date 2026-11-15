@@ -2,6 +2,11 @@ Revision history for Lingua-EN-NameCase
 =======================================
 
 1.22
+	Added t/fuzz.t, t/all-fuzz.t and t/conf/NameCase-list.yml (fuzz testing,
+	  extended tests only); t/NameCase-list.t runs the hand-written schema
+	  under make test
+	Fix: $VERSION and README now match this release; Makefile.PL declares
+	  List::Util and all test prerequisites and now generates META files
 	Added t/transition.t (state diagram); the STATE DIAGRAM now shows the
 	  too_long edge and that $MAX_LENGTH is part of the configuration
 	Added the Test Dashboard
@@ -49,10 +54,10 @@ Revision history for Lingua-EN-NameCase
 	  Perl 5.26 via Params::Validate::Strict): the internals are locked only if it
 	  is installed.  Fixes install failures on old Perls
 
-1.21	Sun Nov 15 07:38:11 EST 2020
+1.21	2020-11-15T07:38:11-05:00
 	Fix CPAN breakage
 
-1.20	Fri Nov 13 15:20:30 EST 2020
+1.20	2020-11-13T15:20:30-05:00
 	No changes to the code, new maintainer - thanks to BARBIE
 
 1.19    2015-01-29

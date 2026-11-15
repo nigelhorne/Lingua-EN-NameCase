@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
 
-# FIXME:  Make this work with the output from date(1)
-
 use Test::More;
 use IO::File;
 

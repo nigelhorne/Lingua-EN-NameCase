@@ -4,7 +4,7 @@ Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercas
 
 ## Version
 
-Version 1.21
+Version 1.22
 
 ## Synopsis
 
@@ -747,7 +747,7 @@ nc and NameCase read Config and never change it (ΞConfig).
 The module keeps no data between calls except the configuration.  So there
 are two small machines: the configuration, and what happens during one call.
 
-Configuration (the four switches and `%MESSAGES`):
+Configuration (the four switches, `$MAX_LENGTH` and `%MESSAGES`):
 
 ```perl
       use Lingua::EN::NameCase
@@ -763,7 +763,9 @@ Configuration (the four switches and `%MESSAGES`):
                                                                 set again
 ```
 
-Both states accept every call below.  Calls never change the configuration.
+DEFAULTS also means that `$MAX_LENGTH` is `undef` and `%MESSAGES` is
+empty.  Both states accept every call below.  Calls never change the
+configuration.
 
 One call to `nc` or `NameCase`:
 
@@ -790,6 +792,10 @@ One call to `nc` or `NameCase`:
             +---------------------------------------+
               action: return the new string
 
+      READING also goes to FAILED when $MAX_LENGTH is set and the text is
+      longer (message too_long).  The caller gets an exception and nothing
+      is changed.
+
       NameCase only: an array ref in scalar or void context goes from
       CASING to DONE after replacing each element (the only side effect
       on caller data), and returns the array ref.
@@ -799,6 +805,7 @@ One call to `nc` or `NameCase`:
 
 Copyright (c) Mark Summerfield 1998-2014. All Rights Reserved.
 Copyright (c) Barbie 2014-2015. All Rights Reserved.
+Copyright (c) Nigel Horne 2020-2026. All Rights Reserved.
 
 This distribution is free software; you can redistribute it and/or
-modify it under the Artistic Licence v2.
+modify it under the Artistic License 2.0.

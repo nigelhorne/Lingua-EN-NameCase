@@ -130,7 +130,7 @@ for my $pm_file (@pm_files) {
 		make_path($run_dir);
 		my $failed = 0;
 
-		# ── Step 1: extract schemas via CLI ──────────────────────────────
+		# -- Step 1: extract schemas via CLI
 		diag("step 1: extract-schemas $pm_file") if $VERBOSE;
 
 		my ($out, $err);
@@ -152,7 +152,7 @@ for my $pm_file (@pm_files) {
 		diag("stdout:\n$out") if $VERBOSE && $out;
 		pass('extract-schemas succeeded');
 
-		# ── Step 2: find generated schema files ──────────────────────────
+		# -- Step 2: find generated schema files
 		my @yml_files = sort glob("$tmpdir/*.yml");
 
 		unless(@yml_files) {
@@ -164,7 +164,7 @@ for my $pm_file (@pm_files) {
 
 		diag(scalar(@yml_files) . ' schema(s) to fuzz') if $VERBOSE;
 
-		# ── Step 3: fuzz-harness-generator -r on each schema ─────────────
+		# -- Step 3: fuzz-harness-generator -r on each schema
 		for my $yml_file (@yml_files) {
 			my ($func) = $yml_file =~ m{/([^/]+)\.yml$};
 
@@ -199,7 +199,7 @@ for my $pm_file (@pm_files) {
 				# new: null means SchemaExtractor could not generate representative
 				# constructor args (e.g. it needs a coderef or object param, or the class
 				# is abstract and refuses to build itself).
-				# Skip — the harness can't build $self automatically in this case.
+				# Skip - the harness can't build $self automatically in this case.
 				push @fuzz_report, { module => $module, func => $func, status => 'oop' };
 				pass("$func: skipped (OOP instance method - constructor not auto-buildable, " .
 					'perhaps this is an abstract class?)');
