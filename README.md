@@ -303,6 +303,28 @@ See ["SYNOPSIS"](#synopsis).
 A single hash reference, or any reference type other than SCALAR or ARRAY,
 is rejected.
 
+Valid and invalid input, by partition:
+
+- Argument form
+
+    Valid: one string, one scalar reference (copied, not changed), one array
+    reference, or a list of strings.  Invalid: no argument or, in scalar or
+    void context, more than one (croak `single_arg`); a HASH, CODE, GLOB or
+    other reference (croak `usage_namecase`).
+
+- Array size
+
+    0, 1, 2 and many are all valid.  An empty array returns an empty result.
+    In list context the original is never changed.  In scalar or void context
+    an array reference is changed in place and returned.
+
+- Each element
+
+    Must satisfy the `nc` domain (see below), including `$MAX_LENGTH`.  One
+    bad element croaks, and then no element of the array is changed.
+
+The domain of each element is the domain of ["nc"](#nc).
+
 ##### Output
 
 ```perl
@@ -398,6 +420,41 @@ It does not change `$_`, `$@`, `$!` or any `alarm` timer.
             },
     }
 ```
+
+Valid and invalid input, by partition:
+
+- Argument count
+
+    Valid: 0 (`$_` is used) or 1.  Invalid: 2 or more (croak `usage_nc`,
+    reported as `list`).
+
+- Argument type
+
+    Valid: a string, a number, a scalar reference, `undef`, `''` and `'0'`
+    (the last three are returned unchanged).  Invalid: any other reference
+    (HASH, ARRAY, CODE, GLOB, REF, Regexp, or an object); croak `usage_nc`,
+    with the type or class name made safe and cut to 64 characters.
+
+- Length (`$MAX_LENGTH`)
+
+    Counted in characters, never bytes.  `undef` means no limit.  A length
+    equal to the maximum is accepted.  One character more croaks `too_long`.
+    A maximum of 0 admits only the false values.  Negative or non-numeric
+    maximums are not checked; keep to non-negative integers.
+
+- Text
+
+    Any character string is accepted: ASCII, accented Latin, Greek, Cyrillic,
+    CJK, Hebrew, emoji, combining marks (Zalgo), and bidi controls such as
+    U+202E.  None of these crash or lose characters.  The result is at most 3
+    times as long as the input.  Undecoded bytes are not cased.
+
+- Recognised patterns
+
+    `Mac` is split when 3 or more letters follow and the last is not one of
+    `a c i o z j`; `Mc` is always split.  Roman numerals I to LXXXIX are
+    converted; 90 (XC), IIII, XXXX and LXXXX are not.  Post-nominals are
+    converted only at the end of the string.
 
 ##### Output
 

@@ -517,6 +517,32 @@ See L</SYNOPSIS>.
 A single hash reference, or any reference type other than SCALAR or ARRAY,
 is rejected.
 
+Valid and invalid input, by partition:
+
+=over 4
+
+=item Argument form
+
+Valid: one string, one scalar reference (copied, not changed), one array
+reference, or a list of strings.  Invalid: no argument or, in scalar or
+void context, more than one (croak C<single_arg>); a HASH, CODE, GLOB or
+other reference (croak C<usage_namecase>).
+
+=item Array size
+
+0, 1, 2 and many are all valid.  An empty array returns an empty result.
+In list context the original is never changed.  In scalar or void context
+an array reference is changed in place and returned.
+
+=item Each element
+
+Must satisfy the C<nc> domain (see below), including C<$MAX_LENGTH>.  One
+bad element croaks, and then no element of the array is changed.
+
+=back
+
+The domain of each element is the domain of L</nc>.
+
 =head4 output
 
 	{ type => 'arrayref', element_type => 'string' }    # list context
@@ -638,6 +664,45 @@ It does not change C<$_>, C<$@>, C<$!> or any C<alarm> timer.
 			max      => undef,        # $MAX_LENGTH, when set
 		},
 	}
+
+Valid and invalid input, by partition:
+
+=over 4
+
+=item Argument count
+
+Valid: 0 (C<$_> is used) or 1.  Invalid: 2 or more (croak C<usage_nc>,
+reported as C<list>).
+
+=item Argument type
+
+Valid: a string, a number, a scalar reference, C<undef>, C<''> and C<'0'>
+(the last three are returned unchanged).  Invalid: any other reference
+(HASH, ARRAY, CODE, GLOB, REF, Regexp, or an object); croak C<usage_nc>,
+with the type or class name made safe and cut to 64 characters.
+
+=item Length (C<$MAX_LENGTH>)
+
+Counted in characters, never bytes.  C<undef> means no limit.  A length
+equal to the maximum is accepted.  One character more croaks C<too_long>.
+A maximum of 0 admits only the false values.  Negative or non-numeric
+maximums are not checked; keep to non-negative integers.
+
+=item Text
+
+Any character string is accepted: ASCII, accented Latin, Greek, Cyrillic,
+CJK, Hebrew, emoji, combining marks (Zalgo), and bidi controls such as
+U+202E.  None of these crash or lose characters.  The result is at most 3
+times as long as the input.  Undecoded bytes are not cased.
+
+=item Recognised patterns
+
+C<Mac> is split when 3 or more letters follow and the last is not one of
+C<a c i o z j>; C<Mc> is always split.  Roman numerals I to LXXXIX are
+converted; 90 (XC), IIII, XXXX and LXXXX are not.  Post-nominals are
+converted only at the end of the string.
+
+=back
 
 =head4 output
 
