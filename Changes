@@ -1,11 +1,11 @@
 Revision history for Lingua-EN-NameCase
 =======================================
 
-1.22
+1.22	Sun Nov 15 09:37:08 AM EST 2026
 	Added t/fuzz.t, t/all-fuzz.t and t/conf/NameCase-list.yml (fuzz testing,
 	  extended tests only); t/NameCase-list.t runs the hand-written schema
 	  under make test
-	Fix: $VERSION and README now match this release; Makefile.PL declares
+	Fix: Makefile.PL declares
 	  List::Util and all test prerequisites and now generates META files
 	Added t/transition.t (state diagram); the STATE DIAGRAM now shows the
 	  too_long edge and that $MAX_LENGTH is part of the configuration
