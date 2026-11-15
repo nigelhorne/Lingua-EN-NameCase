@@ -2,6 +2,8 @@ Revision history for Lingua-EN-NameCase
 =======================================
 
 1.22
+	Added the Test Dashboard
+	Added t/transaction.t (lifecycle, rollback, idempotency, concurrency)
 	Added t/path.t (every execution path); marked the unreachable die after
 	  croak in _fail
 	Added t/domain.t (equivalence partitions and boundary values) and documented

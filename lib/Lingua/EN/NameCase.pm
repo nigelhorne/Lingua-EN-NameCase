@@ -1076,6 +1076,14 @@ data 'cleaner' it may be all you need.
 
 Use Kim Ryan's L<Lingua::EN::NameParse> for any really sophisticated name parsing.
 
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<Test Dashboard|https://nigelhorne.github.io/Lingua-En-NameCase/coverage/>
+
+=back
+
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.

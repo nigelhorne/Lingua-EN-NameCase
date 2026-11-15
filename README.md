@@ -629,6 +629,10 @@ data 'cleaner' it may be all you need.
 
 Use Kim Ryan's [Lingua::EN::NameParse](https://metacpan.org/pod/Lingua%3A%3AEN%3A%3ANameParse) for any really sophisticated name parsing.
 
+## See Also
+
+- [Test Dashboard](https://nigelhorne.github.io/Lingua-En-NameCase/coverage/)
+
 ## Support
 
 You can find documentation for this module with the perldoc command.
