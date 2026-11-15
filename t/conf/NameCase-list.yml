@@ -1,0 +1,31 @@
+---
+# Hand-written schema for Lingua::EN::NameCase::NameCase.
+#
+# extract-schemas describes only the single-arrayref call, NameCase([...]),
+# because one documented parameter maps to one argument.  NameCase also
+# accepts a plain list -- NameCase('A', 'B') -- which is a different call
+# shape and returns a list.  Two positional string parameters make the
+# generated harness call NameCase(@alist) with two arguments; output type
+# 'array' makes it capture the call in list context, which is what the list
+# form needs.  The arrayref form stays covered by the extracted schema.
+module: Lingua::EN::NameCase
+function: NameCase
+config:
+  close_stdin: 1
+  dedup: 1
+  test_empty: 1
+  test_non_ascii: 0
+  test_nuls: 0
+  test_security: 0
+  test_undef: 0
+input:
+  first:
+    type: string
+    position: 0
+    optional: 0
+  second:
+    type: string
+    position: 1
+    optional: 0
+output:
+  type: array

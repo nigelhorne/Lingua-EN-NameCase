@@ -17,12 +17,14 @@ t/94metatest.t
 t/95changedate.t
 t/96metatest.t
 t/all-fuzz.t
+t/conf/NameCase-list.yml
 t/data-flow.t
 t/domain.t
 t/edge_cases.t
 t/eof.t
 t/eol.t
 t/function.t
+t/fuzz.t
 t/integration.t
 t/lib/ReturnsOk.pm
 t/links.t
