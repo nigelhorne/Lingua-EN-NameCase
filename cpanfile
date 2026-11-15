@@ -2,26 +2,25 @@
 
 requires 'Carp';
 requires 'Exporter';
+requires 'IPC::System::Simple';   # needed by "use autodie qw(:all)"
 requires 'Readonly';
-recommends 'Sub::Private', '0.09';    # optional; needs Perl 5.14+ and heavy dependencies
 requires 'autodie';
-requires 'IPC::System::Simple';    # needed by "use autodie qw(:all)"
+recommends 'Sub::Private', '0.09';
 
 on 'test' => sub {
 	requires 'Errno';
+	requires 'File::Temp';
 	requires 'IO::File';
+	requires 'JSON::PP';
 	requires 'POSIX';
 	requires 'Test::DescribeMe';
 	requires 'Test::Memory::Cycle';
 	requires 'Test::Mockingbird';
 	requires 'Test::Most';
 	requires 'Test::Needs';
-	requires 'File::Temp';
-	requires 'JSON::PP';
-	requires 'Test::Memory::Cycle';
-	requires 'Test::Mockingbird';
-	recommends 'Test::Returns';    # needs Perl 5.26+; t/lib/ReturnsOk.pm falls back without it
+	requires 'Test::Which';
 	requires 'Test::Without::Module';
+	recommends 'Test::Returns';
 };
 
 on 'develop' => sub {

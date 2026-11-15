@@ -43,6 +43,7 @@ WriteMakefile(
 		'JSON::PP' => 0,
 		'Test::Memory::Cycle' => 0,
 		'Test::Mockingbird' => 0,
+		'Test::Which' => 0,
 		'Test::Without::Module' => 0,
 	}, 'LIBS'              => [''],   # e.g., '-lm'
 	'DEFINE'            => '',     # e.g., '-DHAVE_SOMETHING'
