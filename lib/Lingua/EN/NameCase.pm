@@ -1,7 +1,5 @@
 package Lingua::EN::NameCase;
 
-=encoding utf8
-
 =head1 NAME
 
 Lingua::EN::NameCase - Correctly case a person's name from UPPERCASE or lowercase
@@ -794,6 +792,7 @@ sub _fail {
 
 	# Not reached: croak never returns.  This stops a guard clause from
 	# falling through into bad data if croak is ever replaced.
+	# TODO: Unreachable code detected during path analysis. Investigate for removal.
 	die $message;    ## no critic
 }
 
@@ -1119,6 +1118,8 @@ L<http://deps.cpantesters.org/?module=Lingua::EN::NameCase>
 =head1 ACKNOWLEDGEMENTS
 
 Thanks to Kim Ryan <kimaryan@ozemail.com.au> for his Mc/Mac solution.
+
+=encoding utf8
 
 =head1 FORMAL SPECIFICATION
 

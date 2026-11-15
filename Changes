@@ -2,6 +2,8 @@ Revision history for Lingua-EN-NameCase
 =======================================
 
 1.22
+	Added t/path.t (every execution path); marked the unreachable die after
+	  croak in _fail
 	Added t/domain.t (equivalence partitions and boundary values) and documented
 	  the valid and invalid input domains in the API SPECIFICATION
 	Use gtar to create a distribution on Macs
