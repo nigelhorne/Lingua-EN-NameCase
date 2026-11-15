@@ -631,7 +631,7 @@ Use Kim Ryan's [Lingua::EN::NameParse](https://metacpan.org/pod/Lingua%3A%3AEN%3
 
 ## See Also
 
-- [Test Dashboard](https://nigelhorne.github.io/Lingua-En-NameCase/coverage/)
+- [Test Dashboard](https://nigelhorne.github.io/Lingua-EN-NameCase/coverage/)
 
 ## Support
 

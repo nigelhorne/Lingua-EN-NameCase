@@ -1080,7 +1080,7 @@ Use Kim Ryan's L<Lingua::EN::NameParse> for any really sophisticated name parsin
 
 =over 4
 
-=item * L<Test Dashboard|https://nigelhorne.github.io/Lingua-En-NameCase/coverage/>
+=item * L<Test Dashboard|https://nigelhorne.github.io/Lingua-EN-NameCase/coverage/>
 
 =back
 
@@ -1194,7 +1194,7 @@ nc and NameCase read Config and never change it (ΞConfig).
 The module keeps no data between calls except the configuration.  So there
 are two small machines: the configuration, and what happens during one call.
 
-Configuration (the four switches and C<%MESSAGES>):
+Configuration (the four switches, C<$MAX_LENGTH> and C<%MESSAGES>):
 
 	  use Lingua::EN::NameCase
 	            |
@@ -1208,7 +1208,9 @@ Configuration (the four switches and C<%MESSAGES>):
 	   +-----------------+                                      +----------+
 	                                                            set again
 
-Both states accept every call below.  Calls never change the configuration.
+DEFAULTS also means that C<$MAX_LENGTH> is C<undef> and C<%MESSAGES> is
+empty.  Both states accept every call below.  Calls never change the
+configuration.
 
 One call to C<nc> or C<NameCase>:
 
@@ -1233,6 +1235,10 @@ One call to C<nc> or C<NameCase>:
 	        |                                       |
 	        +---------------------------------------+
 	          action: return the new string
+
+	  READING also goes to FAILED when $MAX_LENGTH is set and the text is
+	  longer (message too_long).  The caller gets an exception and nothing
+	  is changed.
 
 	  NameCase only: an array ref in scalar or void context goes from
 	  CASING to DONE after replacing each element (the only side effect

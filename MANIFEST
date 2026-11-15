@@ -18,6 +18,7 @@ t/lib/ReturnsOk.pm
 t/locales.t
 t/messages.t
 t/transaction.t
+t/transition.t
 t/unit.t
 t/90podtest.t
 t/91podcover.t
